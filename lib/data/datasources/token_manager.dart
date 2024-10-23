@@ -1,20 +1,26 @@
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class TokenManager {
+  static const String _tokenBoxName = 'auth_box';
   static const String _tokenKey = 'auth_token';
 
+  Future<void> init() async {
+    await Hive.initFlutter();
+    await Hive.openBox<String>(_tokenBoxName);
+  }
+
   Future<void> saveToken(String token) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_tokenKey, token);
+    final box = Hive.box<String>(_tokenBoxName);
+    await box.put(_tokenKey, token);
   }
 
   Future<String?> getToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_tokenKey);
+    final box = Hive.box<String>(_tokenBoxName);
+    return box.get(_tokenKey);
   }
 
   Future<void> deleteToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_tokenKey);
+    final box = Hive.box<String>(_tokenBoxName);
+    await box.delete(_tokenKey);
   }
 }

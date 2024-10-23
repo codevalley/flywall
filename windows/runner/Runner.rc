@@ -89,11 +89,11 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.less.flywall" "\0"
+            VALUE "CompanyName", "com.lesscorp" "\0"
             VALUE "FileDescription", "flywall" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "flywall" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2024 com.less.flywall. All rights reserved." "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2024 com.lesscorp. All rights reserved." "\0"
             VALUE "OriginalFilename", "flywall.exe" "\0"
             VALUE "ProductName", "flywall" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"

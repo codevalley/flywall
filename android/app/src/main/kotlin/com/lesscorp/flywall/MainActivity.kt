@@ -1,4 +1,4 @@
-package com.less.flywall.flywall
+package com.lesscorp.flywall
 
 import io.flutter.embedding.android.FlutterActivity
 

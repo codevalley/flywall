@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flywall/data/datasources/token_manager.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final tokenManager = TokenManager();
+  await tokenManager.init();
+
   runApp(const MyApp());
 }
 
