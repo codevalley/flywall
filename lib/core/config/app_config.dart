@@ -1,8 +1,13 @@
 class AppConfig {
   static const String baseUrl =
-      'http://10.0.2.2:8000'; // Replace with your actual API base URL
+      'http://10.0.2.2:8000'; // Update with your API URL
+  static const String apiVersion = 'v1';
+  static const String apiPath = '/api/$apiVersion';
+  static const String wsUrl =
+      'ws://10.0.2.2:8000/ws'; // Update with your WebSocket URL
 
-  // You can add other configuration variables here
-  static const int apiVersion = 1;
-  static const String apiPath = '/api/v$apiVersion';
+  // Storage keys
+  static const String sessionBoxName = 'session_box';
+  static const String userSecretKey = 'user_secret';
+  static const String threadIdKey = 'thread_id';
 }

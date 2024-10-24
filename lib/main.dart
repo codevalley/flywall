@@ -1,48 +1,46 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flywall/presentation/providers/providers.dart';
-import 'package:flywall/presentation/theme/app_theme.dart';
-import 'package:flywall/presentation/pages/home_page.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'core/storage/session_storage.dart';
+import 'features/chat/presentation/chat_screen.dart';
+import 'features/auth/presentation/providers/auth_provider.dart';
+import 'features/chat/presentation/splash_screen.dart';
 
 void main() async {
   try {
-    print('App starting...');
     WidgetsFlutterBinding.ensureInitialized();
-    print('Flutter binding initialized');
+    await Hive.initFlutter();
 
-    final container = ProviderContainer();
-    print('ProviderContainer created');
-
-    final tokenManager = container.read(tokenManagerProvider);
-    print('TokenManager retrieved');
-
-    await tokenManager.init();
-    print('TokenManager initialized');
+    final sessionStorage = SessionStorage();
+    await sessionStorage.init();
 
     runApp(
-      UncontrolledProviderScope(
-        container: container,
-        child: const MyApp(),
+      ProviderScope(
+        child: FlywallApp(),
       ),
     );
-    print('App running');
   } catch (e, stackTrace) {
-    print('Error during app initialization: $e');
-    print('Stack trace: $stackTrace');
+    debugPrint('Error during app initialization: $e');
+    debugPrint('Stack trace: $stackTrace');
   }
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class FlywallApp extends ConsumerWidget {
+  const FlywallApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authProvider);
+
     return MaterialApp(
       title: 'Flywall',
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
-      home: const HomePage(),
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        useMaterial3: true,
+      ),
+      home: authState.status == AuthStatus.authenticated
+          ? const ChatScreen()
+          : const SplashScreen(),
     );
   }
 }
