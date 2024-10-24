@@ -18,7 +18,7 @@ class SearchBar extends StatelessWidget {
         ),
         filled: true,
         fillColor: Colors.grey[200],
-        suffixIcon: Icon(Icons.send),
+        suffixIcon: const Icon(Icons.send),
       ),
       onSubmitted: onSubmitted,
     );

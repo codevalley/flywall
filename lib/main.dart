@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flywall/presentation/pages/splash_page.dart';
-import 'package:flywall/data/datasources/token_manager.dart';
 import 'package:flywall/presentation/providers/providers.dart';
 import 'package:flywall/presentation/theme/app_theme.dart';
 import 'package:flywall/presentation/pages/home_page.dart';
@@ -35,7 +33,7 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
