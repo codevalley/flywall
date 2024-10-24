@@ -1,10 +1,14 @@
 import 'package:dio/dio.dart';
+import 'package:flywall/core/config/app_config.dart';
 import 'package:flywall/core/errors/failures.dart';
 
 class ApiClient {
   final Dio dio;
 
-  ApiClient(this.dio);
+  ApiClient(this.dio) {
+    dio.options.baseUrl = AppConfig.baseUrl + AppConfig.apiPath;
+    // You can add more default configurations here, like headers, timeouts, etc.
+  }
 
   Future<T> get<T>(
     String path, {

@@ -67,6 +67,24 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
 
+  # assets:
+  #   - assets/fonts/
+  #  # Fonts section
+  # fonts:
+  #   - family: Blacker Display
+  #     fonts:
+  #       - asset: assets/fonts/BlackerDisplay-Black.ttf
+  #         weight: 900
+  #       - asset: assets/fonts/BlackerDisplay-Bold.ttf
+  #         weight: 600
+  #       - asset: assets/fonts/BlackerDisplay-Regular.ttf
+  #         weight: 400
+  #   - family: Graphik
+  #     fonts:
+  #       - asset: assets/fonts/Graphik-Regular.otf
+  #         weight: 400
+  #       - asset: assets/fonts/Graphik-Light.otf
+  #         weight: 300
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

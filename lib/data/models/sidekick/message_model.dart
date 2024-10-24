@@ -1,37 +1,48 @@
 import 'package:flywall/domain/entities/sidekick/message.dart';
 
 class MessageModel {
-  final String id;
-  final String threadId;
   final String content;
-  final Map<String, int> updatedEntities;
+  final String threadId;
+  final List<EntityUpdateModel> entityUpdates;
   final TokenUsageModel tokenUsage;
 
   MessageModel({
-    required this.id,
-    required this.threadId,
     required this.content,
-    required this.updatedEntities,
+    required this.threadId,
+    required this.entityUpdates,
     required this.tokenUsage,
   });
 
   factory MessageModel.fromJson(Map<String, dynamic> json) => MessageModel(
-        id: json['id'],
-        threadId: json['thread_id'],
         content: json['content'],
-        updatedEntities: Map<String, int>.from(json['updated_entities']),
+        threadId: json['thread_id'],
+        entityUpdates: (json['entity_updates'] as List)
+            .map((e) => EntityUpdateModel.fromJson(e))
+            .toList(),
         tokenUsage: TokenUsageModel.fromJson(json['token_usage']),
       );
 
   Message toDomain() => Message(
-        id: id,
-        threadId: threadId,
         content: content,
-        entityUpdates: updatedEntities.entries
-            .map((e) => EntityUpdate(type: e.key, count: e.value))
-            .toList(),
+        threadId: threadId,
+        entityUpdates: entityUpdates.map((e) => e.toDomain()).toList(),
         tokenUsage: tokenUsage.toDomain(),
       );
+}
+
+class EntityUpdateModel {
+  final String type;
+  final int count;
+
+  EntityUpdateModel({required this.type, required this.count});
+
+  factory EntityUpdateModel.fromJson(Map<String, dynamic> json) =>
+      EntityUpdateModel(
+        type: json['type'],
+        count: json['count'],
+      );
+
+  EntityUpdate toDomain() => EntityUpdate(type: type, count: count);
 }
 
 class TokenUsageModel {
