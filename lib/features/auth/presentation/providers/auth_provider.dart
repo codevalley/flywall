@@ -67,15 +67,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<void> registerAndLogin() async {
+  Future<void> registerAndLogin(String name) async {
     try {
       state = state.copyWith(status: AuthStatus.loading);
-
-      final screenName = 'user_${DateTime.now().millisecondsSinceEpoch}';
-
-      // Register and login are now combined in the register method
-      final user = await _sessionManager.register(screenName);
-
+      final user = await _sessionManager.register(name);
       state = state.copyWith(
         status: AuthStatus.authenticated,
         user: user,

@@ -24,42 +24,115 @@ class EntityCard extends ConsumerWidget {
     }
   }
 
-  IconData _getIconForType(EntityType type) {
-    switch (type) {
+  String _getPreviewText(Entity entity) {
+    switch (entity.type) {
       case EntityType.task:
-        return Icons.task_alt;
+        final dueDate = entity.data['due_date'];
+        final status = entity.data['status'] ?? 'New';
+        return [
+          'Status: $status',
+          if (dueDate != null) 'Due: $dueDate',
+          _getRelatedEntitiesText(entity),
+        ].where((text) => text.isNotEmpty).join('\n');
+
       case EntityType.note:
-        return Icons.note;
+        return [
+          entity.data['content']?.toString() ?? '',
+          _getRelatedEntitiesText(entity),
+        ].where((text) => text.isNotEmpty).join('\n');
+
       case EntityType.person:
-        return Icons.person;
+        return [
+          if (entity.data['role'] != null) 'Role: ${entity.data['role']}',
+          if (entity.data['email'] != null) 'Email: ${entity.data['email']}',
+          _getRelatedEntitiesText(entity),
+        ].where((text) => text.isNotEmpty).join('\n');
+
       case EntityType.topic:
-        return Icons.topic;
+        return [
+          entity.data['description']?.toString() ?? '',
+          _getRelatedEntitiesText(entity),
+        ].where((text) => text.isNotEmpty).join('\n');
     }
   }
 
-  void _showEntityDetail(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => EntityDetailView(
-        entity: entity,
-        onClose: () => Navigator.of(context).pop(),
-      ),
-    );
+  String _getRelatedEntitiesText(Entity entity) {
+    final relatedEntities = <String>[];
+
+    if (entity.data['related_people']?.isNotEmpty == true) {
+      relatedEntities.add('${entity.data['related_people'].length} people');
+    }
+    if (entity.data['related_tasks']?.isNotEmpty == true) {
+      relatedEntities.add('${entity.data['related_tasks'].length} tasks');
+    }
+    if (entity.data['related_topics']?.isNotEmpty == true) {
+      relatedEntities.add('${entity.data['related_topics'].length} topics');
+    }
+
+    return relatedEntities.isEmpty
+        ? ''
+        : 'Related: ${relatedEntities.join(', ')}';
+  }
+
+  List<String> _getTags(Entity entity) {
+    final tags = <String>[];
+
+    switch (entity.type) {
+      case EntityType.task:
+        if (entity.data['status'] != null) {
+          tags.add(entity.data['status']);
+        }
+        if (entity.data['priority'] != null) {
+          tags.add(entity.data['priority']);
+        }
+        break;
+
+      case EntityType.note:
+        if (entity.data['categories'] is List) {
+          tags.addAll((entity.data['categories'] as List).map((e) => e.toString()));
+        }
+        break;
+
+      case EntityType.person:
+        if (entity.data['role'] != null) {
+          tags.add(entity.data['role']);
+        }
+        if (entity.data['team'] != null) {
+          tags.add(entity.data['team']);
+        }
+        break;
+
+      case EntityType.topic:
+        if (entity.data['keywords'] is List) {
+          tags.addAll((entity.data['keywords'] as List).map((e) => e.toString()));
+        }
+        break;
+    }
+
+    return tags;
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final tags = _getTags(entity);
+
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
       child: InkWell(
-        onTap: () => _showEntityDetail(context),
+        onTap: () => showDialog(
+          context: context,
+          builder: (context) => EntityDetailView(
+            entity: entity,
+            onClose: () => Navigator.of(context).pop(),
+          ),
+        ),
         borderRadius: BorderRadius.circular(12),
         child: Container(
           padding: const EdgeInsets.all(16),
-          width: 200,
+          width: 300,  // Increased width for better content display
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -78,39 +151,37 @@ class EntityCard extends ConsumerWidget {
                     ),
                   ),
                   const Spacer(),
-                  // Quick action button based on entity type
-                  IconButton(
-                    icon: Icon(
-                      _getQuickActionIcon(entity.type),
-                      size: 20,
+                  Text(
+                    'Created: ${_formatDate(entity.timestamp)}',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.grey,
                     ),
-                    onPressed: () => _handleQuickAction(context),
-                    color: _getColorForType(entity.type),
-                    tooltip: _getQuickActionTooltip(entity.type),
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               Text(
                 entity.title,
-                style: Theme.of(context).textTheme.titleMedium,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 8),
               Text(
                 _getPreviewText(entity),
                 style: Theme.of(context).textTheme.bodySmall,
-                maxLines: 2,
+                maxLines: 3,
                 overflow: TextOverflow.ellipsis,
               ),
-              if (entity.tags.isNotEmpty) ...[
-                const SizedBox(height: 8),
+              if (tags.isNotEmpty) ...[
+                const SizedBox(height: 12),
                 SizedBox(
                   height: 24,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
-                    itemCount: entity.tags.length,
+                    itemCount: tags.length,
                     separatorBuilder: (_, __) => const SizedBox(width: 4),
                     itemBuilder: (context, index) => Container(
                       padding: const EdgeInsets.symmetric(
@@ -122,7 +193,7 @@ class EntityCard extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        entity.tags[index],
+                        tags[index],
                         style: TextStyle(
                           fontSize: 12,
                           color: _getColorForType(entity.type),
@@ -137,6 +208,18 @@ class EntityCard extends ConsumerWidget {
         ),
       ),
     );
+  }
+  IconData _getIconForType(EntityType type) {
+    switch (type) {
+      case EntityType.task:
+        return Icons.task_alt;
+      case EntityType.note:
+        return Icons.note;
+      case EntityType.person:
+        return Icons.person;
+      case EntityType.topic:
+        return Icons.topic;
+    }
   }
 
   IconData _getQuickActionIcon(EntityType type) {
@@ -164,39 +247,7 @@ class EntityCard extends ConsumerWidget {
         return 'Create Task';
     }
   }
-
-  String _getPreviewText(Entity entity) {
-    switch (entity.type) {
-      case EntityType.task:
-        return 'Status: ${entity.data['status'] ?? 'New'}'
-            '${entity.data['due_date'] != null ? ' • Due: ${entity.data['due_date']}' : ''}';
-      case EntityType.note:
-        return entity.data['content']?.toString() ?? '';
-      case EntityType.person:
-        return [
-          entity.data['role'],
-          entity.data['email'],
-        ].where((item) => item != null).join(' • ');
-      case EntityType.topic:
-        return entity.data['description']?.toString() ?? '';
-    }
-  }
-
-  void _handleQuickAction(BuildContext context) {
-    // TODO: Implement quick actions
-    switch (entity.type) {
-      case EntityType.task:
-        // Mark task as complete
-        break;
-      case EntityType.note:
-        // Open note editor
-        break;
-      case EntityType.person:
-        // Add to team
-        break;
-      case EntityType.topic:
-        // Create task from topic
-        break;
-    }
+  String _formatDate(DateTime date) {
+    return '${date.month}/${date.day}/${date.year}';
   }
 }

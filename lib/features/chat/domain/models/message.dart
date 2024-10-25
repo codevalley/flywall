@@ -8,7 +8,7 @@ class Message {
   final String id;
   final String content;
   final MessageType type;
-  final List<Entity> entities;
+  final List<Entity> entities;  // We'll convert the map to a flat list
   final DateTime timestamp;
   final Map<String, dynamic>? tokenUsage;
   final String? threadId;
@@ -34,21 +34,72 @@ class Message {
     final id = json['id'] ?? DateTime.now().microsecondsSinceEpoch.toString();
 
     // Use 'response' field as content, falling back to 'content' if not present
-    final content =
-        json['response'] as String? ?? json['content'] as String? ?? '';
+    final content = json['response'] as String? ?? json['content'] as String? ?? '';
 
-    // Parse entities if present
-    final entities = (json['entities'] as List?)
-            ?.map((e) => Entity.fromJson(e as Map<String, dynamic>))
-            .toList() ??
-        [];
+    // Parse entities from the new structure
+    final entities = <Entity>[];
+    if (json['entities'] is Map<String, dynamic>) {
+      final entitiesMap = json['entities'] as Map<String, dynamic>;
+
+      // Process tasks
+      if (entitiesMap['tasks'] is List) {
+        for (final task in entitiesMap['tasks']) {
+          entities.add(Entity(
+            id: task['task_id'],
+            type: EntityType.task,
+            title: task['title'] ?? 'Untitled Task',
+            data: task,
+            timestamp: DateTime.parse(task['created_at']),
+          ));
+        }
+      }
+
+      // Process notes
+      if (entitiesMap['notes'] is List) {
+        for (final note in entitiesMap['notes']) {
+          entities.add(Entity(
+            id: note['note_id'],
+            type: EntityType.note,
+            title: note['content'] ?? 'Untitled Note',
+            data: note,
+            timestamp: DateTime.parse(note['created_at']),
+          ));
+        }
+      }
+
+      // Process people
+      if (entitiesMap['people'] is List) {
+        for (final person in entitiesMap['people']) {
+          entities.add(Entity(
+            id: person['person_id'],
+            type: EntityType.person,
+            title: person['name'] ?? 'Unnamed Person',
+            data: person,
+            timestamp: DateTime.parse(person['created_at']),
+          ));
+        }
+      }
+
+      // Process topics
+      if (entitiesMap['topics'] is List) {
+        for (final topic in entitiesMap['topics']) {
+          entities.add(Entity(
+            id: topic['topic_id'],
+            type: EntityType.topic,
+            title: topic['name'] ?? 'Untitled Topic',
+            data: topic,
+            timestamp: DateTime.parse(topic['created_at']),
+          ));
+        }
+      }
+    }
 
     // Parse token usage
     final tokenUsage = json['token_usage'] as Map<String, dynamic>?;
 
     // Parse updated entities
     final updatedEntities = (json['updated_entities'] as Map<String, dynamic>?)
-            ?.map((key, value) => MapEntry(key, value as int)) ??
+        ?.map((key, value) => MapEntry(key, value as int)) ??
         {};
 
     // Parse thread completion status
@@ -61,7 +112,7 @@ class Message {
       id: id,
       content: content,
       type: MessageType.values.firstWhere(
-        (t) => t.name == (json['type'] as String?),
+            (t) => t.name == (json['type'] as String?),
         orElse: () => MessageType.text,
       ),
       entities: entities,

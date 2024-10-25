@@ -1,4 +1,4 @@
-// chat/widgets/message_bubble.dart
+// lib/features/chat/widgets/message_bubble.dart
 import 'package:flutter/material.dart';
 import '../domain/models/message.dart';
 
@@ -37,10 +37,12 @@ class MessageBubble extends StatelessWidget {
           if (message.tokenUsage != null) ...[
             const SizedBox(height: 8),
             Text(
-              'Tokens: ${message.tokenUsage!["total"]}',
+              'Tokens: ${message.tokenUsage!['total_tokens'] ?? 0} '
+                  '(prompt: ${message.tokenUsage!['prompt_tokens'] ?? 0}, '
+                  'completion: ${message.tokenUsage!['completion_tokens'] ?? 0})',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey,
-                  ),
+                color: Colors.grey,
+              ),
             ),
           ],
         ],
