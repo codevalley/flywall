@@ -1,22 +1,23 @@
-import 'package:dio/dio.dart';
+// lib/features/auth/data/session_manager.dart
+import '../../../core/network/api_client.dart';
 import '../../../core/config/app_config.dart';
 import '../../../core/storage/session_storage.dart';
 import '../../../core/errors/exceptions.dart';
 import '../domain/user.dart';
 
 class SessionManager {
-  final Dio _dio;
+  final ApiClient _apiClient;
   final SessionStorage _storage;
   User? _currentUser;
 
-  SessionManager(this._dio, this._storage);
+  SessionManager(this._apiClient, this._storage);
 
   User? get currentUser => _currentUser;
 
   Future<bool> login(String userSecret) async {
     try {
-      final response = await _dio.post(
-        '${AppConfig.baseUrl}/auth/token',
+      final response = await _apiClient.post(
+        '${AppConfig.authEndpoint}/token',
         data: {'user_secret': userSecret},
       );
 
@@ -24,18 +25,20 @@ class SessionManager {
         final data = response.data;
         await _storage.saveUserSecret(userSecret);
         _currentUser = User.fromJson(data);
+        // Set the auth token in the API client
+        _apiClient.setAuthToken(_currentUser!.accessToken!);
         return true;
       }
       return false;
-    } on DioException catch (e) {
-      throw AuthException(e.message ?? 'Login failed');
+    } catch (e) {
+      throw AuthException(e.toString());
     }
   }
 
   Future<User> register(String screenName) async {
     try {
-      final response = await _dio.post(
-        '${AppConfig.baseUrl}/auth/register',
+      final response = await _apiClient.post(
+        '${AppConfig.authEndpoint}/register',
         data: {'screen_name': screenName},
       );
 
@@ -45,14 +48,15 @@ class SessionManager {
         return user;
       }
       throw const AuthException('Registration failed');
-    } on DioException catch (e) {
-      throw AuthException(e.message ?? 'Registration failed');
+    } catch (e) {
+      throw AuthException(e.toString());
     }
   }
 
   Future<void> logout() async {
     await _storage.clearSession();
     _currentUser = null;
+    _apiClient.clearAuthToken();
   }
 
   Future<bool> restoreSession() async {

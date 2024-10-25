@@ -1,15 +1,18 @@
+// lib/features/chat/presentation/providers/chat_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/chat_service.dart';
 import '../../domain/models/message.dart';
-import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../../core/providers/core_providers.dart';
+
+// Export ChatState for use in other files
+export '../../domain/models/message.dart';
 
 // Service provider
 final chatServiceProvider = Provider((ref) {
-  final dio = ref.watch(dioProvider);
-  return ChatService(dio);
+  final apiClient = ref.watch(apiClientProvider);
+  return ChatService(apiClient);
 });
 
-// Chat state
 class ChatState {
   final List<Message> messages;
   final bool isLoading;
@@ -62,12 +65,10 @@ class ChatNotifier extends StateNotifier<ChatState> {
         isLoading: false,
       );
 
-      // Get thread completion status from message
       final isThreadComplete =
           message.tokenUsage?['is_thread_complete'] as bool? ?? false;
       if (isThreadComplete) {
-        await Future.delayed(
-            const Duration(seconds: 2)); // Give user time to read
+        await Future.delayed(const Duration(seconds: 2));
         clearThread();
       }
     } catch (e) {
@@ -87,9 +88,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
   Future<void> loadThread(String threadId) async {
     try {
       state = state.copyWith(isLoading: true, error: null);
-
       final messages = await _chatService.getThread(threadId);
-
       state = state.copyWith(
         messages: messages,
         currentThreadId: threadId,
@@ -108,6 +107,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
   }
 }
 
+// Export the provider for use in other files
 final chatProvider = StateNotifierProvider<ChatNotifier, ChatState>((ref) {
   final chatService = ref.watch(chatServiceProvider);
   return ChatNotifier(chatService);

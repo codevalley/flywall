@@ -1,16 +1,14 @@
+// lib/features/auth/presentation/providers/auth_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:dio/dio.dart';
 import '../../data/session_manager.dart';
 import '../../domain/user.dart';
-import '../../../../core/storage/session_storage.dart';
+import '../../../../core/providers/core_providers.dart';
 
-// Core providers
-final dioProvider = Provider((ref) => Dio());
-final sessionStorageProvider = Provider((ref) => SessionStorage());
+// Session manager provider
 final sessionManagerProvider = Provider((ref) {
-  final dio = ref.watch(dioProvider);
+  final apiClient = ref.watch(apiClientProvider);
   final storage = ref.watch(sessionStorageProvider);
-  return SessionManager(dio, storage);
+  return SessionManager(apiClient, storage);
 });
 
 // Auth state
@@ -47,49 +45,68 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<bool> checkAuth() async {
     try {
-      state = state.copyWith(status: AuthStatus.loading);
+      // Set loading state before async operation
+      Future(() {
+        state = state.copyWith(status: AuthStatus.loading);
+      });
+
       final success = await _sessionManager.restoreSession();
+
       if (success) {
-        state = state.copyWith(
-          status: AuthStatus.authenticated,
-          user: _sessionManager.currentUser,
-        );
+        Future(() {
+          state = state.copyWith(
+            status: AuthStatus.authenticated,
+            user: _sessionManager.currentUser,
+          );
+        });
+      } else {
+        Future(() {
+          state = state.copyWith(status: AuthStatus.initial);
+        });
       }
+
       return success;
     } catch (e) {
-      state = state.copyWith(
-        status: AuthStatus.error,
-        error: e.toString(),
-      );
+      Future(() {
+        state = state.copyWith(
+          status: AuthStatus.error,
+          error: e.toString(),
+        );
+      });
       return false;
     }
   }
 
   Future<void> registerAndLogin() async {
     try {
-      state = state.copyWith(status: AuthStatus.loading);
+      Future(() {
+        state = state.copyWith(status: AuthStatus.loading);
+      });
 
-      // Generate a random screen name (or handle it as per your requirement)
       final screenName = 'user_${DateTime.now().millisecondsSinceEpoch}';
-
-      // Register new user
       final user = await _sessionManager.register(screenName);
 
-      state = state.copyWith(
-        status: AuthStatus.authenticated,
-        user: user,
-      );
+      Future(() {
+        state = state.copyWith(
+          status: AuthStatus.authenticated,
+          user: user,
+        );
+      });
     } catch (e) {
-      state = state.copyWith(
-        status: AuthStatus.error,
-        error: e.toString(),
-      );
+      Future(() {
+        state = state.copyWith(
+          status: AuthStatus.error,
+          error: e.toString(),
+        );
+      });
     }
   }
 
   Future<void> logout() async {
     await _sessionManager.logout();
-    state = const AuthState(status: AuthStatus.initial);
+    Future(() {
+      state = const AuthState(status: AuthStatus.initial);
+    });
   }
 }
 

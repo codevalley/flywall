@@ -1,8 +1,12 @@
+// Update lib/features/chat/presentation/chat_screen.dart to include entity state handling
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../widgets/search_input.dart';
 import '../widgets/message_list.dart';
+import '../widgets/entity/entity_detail_view.dart';
 import 'providers/chat_provider.dart';
+import 'providers/entity_provider.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key});
@@ -27,6 +31,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     final chatState = ref.watch(chatProvider);
+    // Add entity state watch if needed
+    final selectedEntity = ref.watch(selectedEntityProvider);
 
     // Listen for changes and scroll to bottom when new messages arrive
     ref.listen<ChatState>(chatProvider, (previous, next) {
@@ -46,35 +52,57 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     return Scaffold(
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: SearchInput(
-                onSubmitted: (input) {
-                  if (input.trim().isNotEmpty) {
-                    ref.read(chatProvider.notifier).sendMessage(input);
-                  }
-                },
-                enabled: !chatState.isLoading,
-              ),
-            ),
-            Expanded(
-              child: Stack(
-                children: [
-                  MessageList(
-                    messages: chatState.messages,
-                    scrollController: scrollController,
+            Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: SearchInput(
+                    onSubmitted: (input) {
+                      if (input.trim().isNotEmpty) {
+                        ref.read(chatProvider.notifier).sendMessage(input);
+                      }
+                    },
+                    enabled: !chatState.isLoading,
                   ),
-                  if (chatState.isLoading)
-                    const Positioned(
-                      top: 16,
-                      right: 16,
-                      child: CircularProgressIndicator(),
-                    ),
-                ],
-              ),
+                ),
+                Expanded(
+                  child: Stack(
+                    children: [
+                      MessageList(
+                        messages: chatState.messages,
+                        scrollController: scrollController,
+                      ),
+                      if (chatState.isLoading)
+                        const Positioned(
+                          top: 16,
+                          right: 16,
+                          child: CircularProgressIndicator(),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
             ),
+            // Add entity detail handling if needed
+            if (selectedEntity != null)
+              Positioned.fill(
+                child: GestureDetector(
+                  onTap: () =>
+                      ref.read(selectedEntityProvider.notifier).state = null,
+                  child: Container(
+                    color: Colors.black54,
+                    alignment: Alignment.center,
+                    child: EntityDetailView(
+                      entity: selectedEntity,
+                      onClose: () => ref
+                          .read(selectedEntityProvider.notifier)
+                          .state = null,
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),

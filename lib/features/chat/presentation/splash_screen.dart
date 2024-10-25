@@ -1,3 +1,4 @@
+// lib/features/chat/presentation/splash_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../auth/presentation/providers/auth_provider.dart';
@@ -14,25 +15,38 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _handleAuth();
+    // Schedule the auth check for the next frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _handleAuth();
+    });
   }
 
   Future<void> _handleAuth() async {
     final authNotifier = ref.read(authProvider.notifier);
 
-    // Try to restore session first
-    final hasSession = await authNotifier.checkAuth();
-    if (!mounted) return;
+    try {
+      // Try to restore session first
+      final hasSession = await authNotifier.checkAuth();
 
-    if (!hasSession) {
-      // If no session, register new user
-      await authNotifier.registerAndLogin();
+      if (!mounted) return;
+
+      if (!hasSession) {
+        // If no session, register new user
+        await authNotifier.registerAndLogin();
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     ref.listen(authProvider, (previous, next) {
+      if (!mounted) return;
+
       if (next.status == AuthStatus.authenticated) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const ChatScreen()),
@@ -44,22 +58,22 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       }
     });
 
-    return Scaffold(
+    return const Scaffold(
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const FlutterLogo(size: 100), // Replace with your app logo
-            const SizedBox(height: 24),
-            const Text(
+            FlutterLogo(size: 100),
+            SizedBox(height: 24),
+            Text(
               'Flywall',
               style: TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 48),
-            const CircularProgressIndicator(),
+            SizedBox(height: 48),
+            CircularProgressIndicator(),
           ],
         ),
       ),
