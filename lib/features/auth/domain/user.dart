@@ -24,4 +24,14 @@ class User {
       if (accessToken != null) 'access_token': accessToken,
     };
   }
+
+  User copyWith({
+    String? screenName,
+  }) {
+    return User(
+      id: id,
+      screenName: screenName ?? this.screenName,
+      accessToken: accessToken,
+    );
+  }
 }

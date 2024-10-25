@@ -5,10 +5,17 @@ class AppConfig {
   // API Configuration
   static String get baseUrl => useLocalHost
       ? 'http://10.0.2.2:8000' // Android emulator localhost
-      : 'https://fapi.nyn.sh'; // Replace with your production API
+      : 'https://fapi.nyn.sh'; // Production API
 
   static const String apiVersion = 'v1';
   static String get apiPath => '/api/$apiVersion';
+
+  // API Endpoints
+  static String get authEndpoint => '$baseUrl/auth';
+  static String get tokenEndpoint => '$authEndpoint/token';
+  static String get registerEndpoint => '$authEndpoint/register';
+  static String get userEndpoint => '$authEndpoint/users/me';
+  static String get sidekickEndpoint => '$baseUrl$apiPath/sidekick';
 
   // WebSocket Configuration
   static String get wsUrl =>
@@ -18,10 +25,6 @@ class AppConfig {
   static const String sessionBoxName = 'flywall_session';
   static const String userSecretKey = 'user_secret';
   static const String threadIdKey = 'thread_id';
-
-  // API Endpoints
-  static String get authEndpoint => '$baseUrl/auth';
-  static String get sidekickEndpoint => '$baseUrl$apiPath/sidekick';
 
   // Timeouts
   static const Duration connectionTimeout = Duration(seconds: 30);

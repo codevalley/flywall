@@ -45,68 +45,52 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<bool> checkAuth() async {
     try {
-      // Set loading state before async operation
-      Future(() {
-        state = state.copyWith(status: AuthStatus.loading);
-      });
-
+      state = state.copyWith(status: AuthStatus.loading);
       final success = await _sessionManager.restoreSession();
 
       if (success) {
-        Future(() {
-          state = state.copyWith(
-            status: AuthStatus.authenticated,
-            user: _sessionManager.currentUser,
-          );
-        });
+        state = state.copyWith(
+          status: AuthStatus.authenticated,
+          user: _sessionManager.currentUser,
+        );
       } else {
-        Future(() {
-          state = state.copyWith(status: AuthStatus.initial);
-        });
+        state = state.copyWith(status: AuthStatus.initial);
       }
 
       return success;
     } catch (e) {
-      Future(() {
-        state = state.copyWith(
-          status: AuthStatus.error,
-          error: e.toString(),
-        );
-      });
+      state = state.copyWith(
+        status: AuthStatus.error,
+        error: e.toString(),
+      );
       return false;
     }
   }
 
   Future<void> registerAndLogin() async {
     try {
-      Future(() {
-        state = state.copyWith(status: AuthStatus.loading);
-      });
+      state = state.copyWith(status: AuthStatus.loading);
 
       final screenName = 'user_${DateTime.now().millisecondsSinceEpoch}';
+
+      // Register and login are now combined in the register method
       final user = await _sessionManager.register(screenName);
 
-      Future(() {
-        state = state.copyWith(
-          status: AuthStatus.authenticated,
-          user: user,
-        );
-      });
+      state = state.copyWith(
+        status: AuthStatus.authenticated,
+        user: user,
+      );
     } catch (e) {
-      Future(() {
-        state = state.copyWith(
-          status: AuthStatus.error,
-          error: e.toString(),
-        );
-      });
+      state = state.copyWith(
+        status: AuthStatus.error,
+        error: e.toString(),
+      );
     }
   }
 
   Future<void> logout() async {
     await _sessionManager.logout();
-    Future(() {
-      state = const AuthState(status: AuthStatus.initial);
-    });
+    state = const AuthState(status: AuthStatus.initial);
   }
 }
 

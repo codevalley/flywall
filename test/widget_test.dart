@@ -111,7 +111,6 @@ void main() {
   testWidgets('Shows error message on network failure',
       (WidgetTester tester) async {
     final mockApiClient = MockApiClient();
-    bool throwError = true;
 
     await tester.pumpWidget(
       ProviderScope(

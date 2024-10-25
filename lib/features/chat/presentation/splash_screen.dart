@@ -1,8 +1,8 @@
-// lib/features/chat/presentation/splash_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../auth/presentation/providers/auth_provider.dart';
 import 'chat_screen.dart';
+import '../../../../core/providers/core_providers.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -25,13 +25,23 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     final authNotifier = ref.read(authProvider.notifier);
 
     try {
-      // Try to restore session first
-      final hasSession = await authNotifier.checkAuth();
+      // Get the storage instance
+      final storage = ref.read(sessionStorageProvider);
 
-      if (!mounted) return;
+      // Check if we have a session
+      if (storage.hasSession()) {
+        // Try to restore existing session
+        final hasSession = await authNotifier.checkAuth();
 
-      if (!hasSession) {
-        // If no session, register new user
+        if (!mounted) return;
+
+        if (!hasSession) {
+          // If restoration failed, clear session and register new user
+          await storage.clearSession();
+          await authNotifier.registerAndLogin();
+        }
+      } else {
+        // No existing session, register new user
         await authNotifier.registerAndLogin();
       }
     } catch (e) {
