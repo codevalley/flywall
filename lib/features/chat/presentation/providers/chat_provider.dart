@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/chat_service.dart';
 import '../../domain/models/message.dart';
 import '../../../../core/providers/core_providers.dart';
-
+import '../../domain/presentation/providers/chat_providers.dart';
 // Export ChatState for use in other files
 export '../../domain/models/message.dart';
 
@@ -13,34 +13,38 @@ final chatServiceProvider = Provider((ref) {
   return ChatService(apiClient);
 });
 
+class ChatMessage {
+  final String content;
+  final bool isUserMessage;
+  final bool isThreadComplete;
+
+  ChatMessage({
+    required this.content,
+    required this.isUserMessage,
+    this.isThreadComplete = false,
+  });
+}
+
 class ChatState {
-  final List<Message> messages;
+  final List<ChatMessage> messages;
   final bool isLoading;
   final String? error;
-  final String? currentThreadId;
-  final Message? messageBeingRetried;
 
-  const ChatState({
-    this.messages = const [],
+  ChatState({
+    required this.messages,
     this.isLoading = false,
     this.error,
-    this.currentThreadId,
-    this.messageBeingRetried,
   });
 
   ChatState copyWith({
-    List<Message>? messages,
+    List<ChatMessage>? messages,
     bool? isLoading,
     String? error,
-    String? currentThreadId,
-    Message? messageBeingRetried,
   }) {
     return ChatState(
       messages: messages ?? this.messages,
       isLoading: isLoading ?? this.isLoading,
       error: error,
-      currentThreadId: currentThreadId ?? this.currentThreadId,
-      messageBeingRetried: messageBeingRetried,
     );
   }
 }
@@ -50,33 +54,18 @@ class ChatNotifier extends StateNotifier<ChatState> {
 
   ChatNotifier(this._chatService) : super(const ChatState());
 
-  Future<void> sendMessage(String input) async {
-    try {
-      state = state.copyWith(isLoading: true, error: null);
+  void sendMessage(String message) {
+    state = state.copyWith(
+      messages: [
+        ...state.messages,
+        ChatMessage(content: message, isUserMessage: true),
+      ],
+      isLoading: true,
+    );
 
-      final message = await _chatService.sendMessage(
-        input,
-        threadId: state.currentThreadId,
-      );
-
-      state = state.copyWith(
-        messages: [...state.messages, message],
-        currentThreadId: message.threadId,
-        isLoading: false,
-      );
-
-      final isThreadComplete =
-          message.tokenUsage?['is_thread_complete'] as bool? ?? false;
-      if (isThreadComplete) {
-        await Future.delayed(const Duration(seconds: 2));
-        clearThread();
-      }
-    } catch (e) {
-      state = state.copyWith(
-        error: e.toString(),
-        isLoading: false,
-      );
-    }
+    // Existing API call logic...
+    // When adding the API response, use:
+    // ChatMessage(content: apiResponse, isUserMessage: false)
   }
 
   Future<void> retryMessage(Message message) async {

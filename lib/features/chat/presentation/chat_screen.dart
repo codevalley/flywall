@@ -48,19 +48,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final chatState = ref.watch(chatProvider);
     final selectedEntity = ref.watch(selectedEntityProvider);
     final hasMessages = chatState.messages.isNotEmpty;
+    final isThreadComplete = chatState.messages.lastOrNull?.isThreadComplete ?? false;
 
     // Listen for changes and scroll to bottom when new messages arrive
     ref.listen<ChatState>(chatProvider, (previous, next) {
       if (previous?.messages.length != next.messages.length) {
         WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
-      }
-
-      // Check for thread completion
-      final lastMessage = next.messages.lastOrNull;
-      if (lastMessage?.isThreadComplete ?? false) {
-        Future.delayed(const Duration(seconds: 2), () {
-          ref.read(chatProvider.notifier).clearThread();
-        });
       }
 
       if (next.error != null) {
@@ -80,17 +73,21 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           children: [
             Column(
               children: [
-                Expanded(
-                  child: hasMessages
-                      ? MessageList(
-                          messages: chatState.messages,
-                          scrollController: scrollController,
-                        )
-                      : const SizedBox.shrink(),
-                ),
+                if (hasMessages)
+                  Expanded(
+                    child: MessageList(
+                      messages: chatState.messages,
+                      scrollController: scrollController,
+                      isThreadComplete: isThreadComplete,
+                    ),
+                  ),
                 SearchInput(
                   onSubmitted: (input) {
                     if (input.trim().isNotEmpty) {
+                      // Clear previous thread if completed
+                      if (isThreadComplete) {
+                        ref.read(chatProvider.notifier).clearThread();
+                      }
                       ref.read(chatProvider.notifier).sendMessage(input);
                     }
                   },
@@ -101,10 +98,23 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               ],
             ),
             if (chatState.isLoading)
-              const Positioned(
-                top: 16,
-                right: 16,
-                child: CircularProgressIndicator(),
+              Positioned(
+                bottom: 90, // Position loader just above the search box
+                right: 32,
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                      ),
+                    ],
+                  ),
+                  child: const CircularProgressIndicator(),
+                ),
               ),
             if (selectedEntity != null)
               Positioned.fill(
@@ -126,11 +136,5 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    scrollController.dispose();
-    super.dispose();
   }
 }
