@@ -124,15 +124,17 @@ class ChatNotifier extends StateNotifier<ChatState> {
     try {
       state = state.copyWith(isLoading: true, error: null);
       final messages = await _chatService.getThread(threadId);
-      
+
       // Convert Message objects to ChatMessage objects
-      final chatMessages = messages.map((msg) => ChatMessage(
-        content: msg.content,
-        isUserMessage: msg.isUserMessage,
-        threadId: msg.threadId,
-        timestamp: msg.timestamp,
-        isThreadComplete: msg.isThreadComplete,
-      )).toList();
+      final chatMessages = messages
+          .map((msg) => ChatMessage(
+                content: msg.content,
+                isUserMessage: msg.type == MessageType.text,
+                threadId: msg.threadId,
+                timestamp: msg.timestamp,
+                isThreadComplete: msg.isThreadComplete,
+              ))
+          .toList();
 
       state = state.copyWith(
         messages: chatMessages,
