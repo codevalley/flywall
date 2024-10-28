@@ -5,7 +5,6 @@ import '../widgets/message_list.dart';
 import '../widgets/entity/entity_detail_view.dart';
 import 'providers/chat_provider.dart';
 import 'providers/entity_provider.dart';
-import '../../../core/storage/session_storage.dart';
 import '../../../core/providers/core_providers.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
@@ -48,7 +47,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final chatState = ref.watch(chatProvider);
     final selectedEntity = ref.watch(selectedEntityProvider);
     final hasMessages = chatState.messages.isNotEmpty;
-    final isThreadComplete = chatState.messages.lastOrNull?.isThreadComplete ?? false;
+    final isThreadComplete =
+        chatState.messages.lastOrNull?.isThreadComplete ?? false;
 
     // Listen for changes and scroll to bottom when new messages arrive
     ref.listen<ChatState>(chatProvider, (previous, next) {
@@ -126,8 +126,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     alignment: Alignment.center,
                     child: EntityDetailView(
                       entity: selectedEntity,
-                      onClose: () =>
-                          ref.read(selectedEntityProvider.notifier).state = null,
+                      onClose: () => ref
+                          .read(selectedEntityProvider.notifier)
+                          .state = null,
                     ),
                   ),
                 ),
