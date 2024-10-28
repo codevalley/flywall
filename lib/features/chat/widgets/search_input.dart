@@ -23,7 +23,7 @@ class _SearchInputState extends State<SearchInput>
   final TextEditingController _controller = TextEditingController();
   bool _hasText = false;
   late final AnimationController _animationController;
-  late final Animation<double> _slideAnimation;
+  //late final Animation<double> _slideAnimation;
 
   @override
   void initState() {
@@ -34,13 +34,13 @@ class _SearchInputState extends State<SearchInput>
       vsync: this,
     );
 
-    _slideAnimation = Tween<double>(
-      begin: 0,
-      end: 1,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
+    // _slideAnimation = Tween<double>(
+    //   begin: 0,
+    //   end: 1,
+    // ).animate(CurvedAnimation(
+    //   parent: _animationController,
+    //   curve: Curves.easeInOut,
+    // ));
   }
 
   @override
