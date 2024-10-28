@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:chat_app/features/chat/presentation/providers/chat_provider.dart';
-
+import '../presentation/providers/chat_provider.dart';
 
 class MessageList extends StatelessWidget {
   final List<ChatMessage> messages;
@@ -25,7 +24,8 @@ class MessageList extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: Center(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(12),
@@ -47,11 +47,14 @@ class MessageList extends StatelessWidget {
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
           child: Align(
-            alignment: message.isUserMessage ? Alignment.centerRight : Alignment.centerLeft,
+            alignment: message.isUserMessage
+                ? Alignment.centerRight
+                : Alignment.centerLeft,
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: message.isUserMessage ? Colors.blue[100] : Colors.grey[200],
+                color:
+                    message.isUserMessage ? Colors.blue[100] : Colors.grey[200],
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
