@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/chat_service.dart';
 import '../../domain/models/message.dart';
 import '../../../../core/providers/core_providers.dart';
-
+import '../../domain/models/entity.dart';
 // Export ChatState for use in other files
 export '../../domain/models/message.dart';
 
@@ -20,6 +20,7 @@ class ChatMessage {
   final DateTime timestamp;
   final String? threadId;
   final bool isError;
+  final List<Entity> entities; // Added field for entities
 
   ChatMessage({
     required this.content,
@@ -28,6 +29,7 @@ class ChatMessage {
     DateTime? timestamp,
     this.threadId,
     this.isError = false,
+    this.entities = const [], // Default to empty list
   }) : timestamp = timestamp ?? DateTime.now();
 }
 
@@ -93,6 +95,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
             isUserMessage: false,
             threadId: response.threadId,
             isThreadComplete: response.isThreadComplete,
+            entities: response.entities, // Include entities from response
           ),
         ],
         currentThreadId: response.threadId,

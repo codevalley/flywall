@@ -23,7 +23,7 @@ class _SearchInputState extends State<SearchInput>
   final TextEditingController _controller = TextEditingController();
   bool _hasText = false;
   late final AnimationController _animationController;
-  //late final Animation<double> _slideAnimation;
+  late final Animation<double> _slideAnimation;
 
   @override
   void initState() {
@@ -34,13 +34,13 @@ class _SearchInputState extends State<SearchInput>
       vsync: this,
     );
 
-    // _slideAnimation = Tween<double>(
-    //   begin: 0,
-    //   end: 1,
-    // ).animate(CurvedAnimation(
-    //   parent: _animationController,
-    //   curve: Curves.easeInOut,
-    // ));
+    _slideAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
   }
 
   @override
@@ -84,33 +84,44 @@ class _SearchInputState extends State<SearchInput>
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (!widget.isThreadActive) ...[
-              const SizedBox(height: 80),
-              ShaderMask(
-                shaderCallback: (bounds) => const LinearGradient(
-                  colors: [Colors.blue, Colors.purple],
-                ).createShader(bounds),
-                child: const Text(
-                  'Flywall',
-                  style: TextStyle(
-                    fontSize: 64,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+            // Header section with animated opacity and slide
+            if (!widget.isThreadActive)
+              Transform.translate(
+                offset: Offset(0, -50 * _slideAnimation.value),
+                child: Opacity(
+                  opacity: 1 - _animationController.value,
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 80),
+                      ShaderMask(
+                        shaderCallback: (bounds) => const LinearGradient(
+                          colors: [Colors.blue, Colors.purple],
+                        ).createShader(bounds),
+                        child: const Text(
+                          'Flywall',
+                          style: TextStyle(
+                            fontSize: 64,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      if (widget.userName != null) ...[
+                        const SizedBox(height: 24),
+                        Text(
+                          'Hello, ${widget.userName}',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 48),
+                    ],
                   ),
                 ),
               ),
-              if (widget.userName != null) ...[
-                const SizedBox(height: 24),
-                Text(
-                  'Hello, ${widget.userName}',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.grey[600],
-                  ),
-                ),
-              ],
-              const SizedBox(height: 48),
-            ],
+            // Search input section
             Container(
               margin: EdgeInsets.symmetric(
                 horizontal: widget.isThreadActive ? 16 : 32,

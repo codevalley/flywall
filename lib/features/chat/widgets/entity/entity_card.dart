@@ -89,7 +89,8 @@ class EntityCard extends ConsumerWidget {
 
       case EntityType.note:
         if (entity.data['categories'] is List) {
-          tags.addAll((entity.data['categories'] as List).map((e) => e.toString()));
+          tags.addAll(
+              (entity.data['categories'] as List).map((e) => e.toString()));
         }
         break;
 
@@ -104,7 +105,8 @@ class EntityCard extends ConsumerWidget {
 
       case EntityType.topic:
         if (entity.data['keywords'] is List) {
-          tags.addAll((entity.data['keywords'] as List).map((e) => e.toString()));
+          tags.addAll(
+              (entity.data['keywords'] as List).map((e) => e.toString()));
         }
         break;
     }
@@ -132,7 +134,7 @@ class EntityCard extends ConsumerWidget {
         borderRadius: BorderRadius.circular(12),
         child: Container(
           padding: const EdgeInsets.all(16),
-          width: 300,  // Increased width for better content display
+          width: 300, // Increased width for better content display
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -154,8 +156,8 @@ class EntityCard extends ConsumerWidget {
                   Text(
                     'Created: ${_formatDate(entity.timestamp)}',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey,
-                    ),
+                          color: Colors.grey,
+                        ),
                   ),
                 ],
               ),
@@ -163,8 +165,8 @@ class EntityCard extends ConsumerWidget {
               Text(
                 entity.title,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                      fontWeight: FontWeight.bold,
+                    ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -209,6 +211,7 @@ class EntityCard extends ConsumerWidget {
       ),
     );
   }
+
   IconData _getIconForType(EntityType type) {
     switch (type) {
       case EntityType.task:
@@ -247,6 +250,7 @@ class EntityCard extends ConsumerWidget {
         return 'Create Task';
     }
   }
+
   String _formatDate(DateTime date) {
     return '${date.month}/${date.day}/${date.year}';
   }

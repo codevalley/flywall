@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../widgets/search_input.dart';
 import '../widgets/message_list.dart';
 import '../widgets/entity/entity_detail_view.dart';
+import '../widgets/chat_title_bar.dart';
 import 'providers/chat_provider.dart';
 import 'providers/entity_provider.dart';
 import '../../../core/providers/core_providers.dart';
@@ -17,18 +19,23 @@ class ChatScreen extends ConsumerStatefulWidget {
 class _ChatScreenState extends ConsumerState<ChatScreen> {
   final scrollController = ScrollController();
   String? _userName;
+  String? _userSecret;
 
   @override
   void initState() {
     super.initState();
-    _loadUserName();
+    _loadUserData();
   }
 
-  Future<void> _loadUserName() async {
+  Future<void> _loadUserData() async {
     final storage = ref.read(sessionStorageProvider);
     final userName = await storage.getUserName();
+    final userSecret = await storage.getUserSecret();
     if (mounted) {
-      setState(() => _userName = userName);
+      setState(() {
+        _userName = userName;
+        _userSecret = userSecret;
+      });
     }
   }
 
@@ -39,6 +46,21 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOut,
       );
+    }
+  }
+
+  Future<void> _copyUserSecret() async {
+    if (_userSecret != null) {
+      await Clipboard.setData(ClipboardData(text: _userSecret!));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('User secret copied to clipboard'),
+            behavior: SnackBarBehavior.floating,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
     }
   }
 
@@ -73,6 +95,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           children: [
             Column(
               children: [
+                ChatTitleBar(
+                  userSecret: _userSecret,
+                  onCopy: _copyUserSecret,
+                ),
                 if (hasMessages)
                   Expanded(
                     child: MessageList(
@@ -137,5 +163,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
   }
 }
