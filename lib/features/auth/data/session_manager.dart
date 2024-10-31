@@ -34,6 +34,9 @@ class SessionManager {
       if (response.statusCode == 200) {
         final data = response.data as Map<String, dynamic>;
 
+        if (data['screen_name'] != null) {
+          await _storage.saveUserName(data['screen_name']);
+        }
         // Save the access token and user secret
         await _storage.saveUserSecret(userSecret);
 
@@ -74,6 +77,7 @@ class SessionManager {
         final data = response.data as Map<String, dynamic>;
         final userSecret = data['user_secret'];
 
+        await _storage.saveUserName(screenName);
         // Immediately login with the received user_secret
         final loginSuccess = await login(userSecret);
         if (!loginSuccess) {
@@ -94,6 +98,11 @@ class SessionManager {
       final response = await _apiClient.get(AppConfig.userEndpoint);
       if (response.statusCode == 200) {
         final data = response.data as Map<String, dynamic>;
+
+        if (data['screen_name'] != null) {
+          await _storage.saveUserName(data['screen_name']);
+        }
+
         _currentUser = _currentUser?.copyWith(
           screenName: data['screen_name'],
           // Add other fields as needed

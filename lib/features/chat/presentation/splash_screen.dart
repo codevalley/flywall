@@ -36,24 +36,6 @@ class _AuthBottomSheetState extends ConsumerState<AuthBottomSheet> {
     super.dispose();
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Listen for auth state changes
-    ref.listen<AuthState>(authProvider, (previous, next) {
-      if (!mounted) return;
-
-      if (next.status == AuthStatus.authenticated) {
-        // Close bottom sheet when authenticated
-        Navigator.of(context).pop();
-      }
-
-      if (next.status == AuthStatus.error && next.error != null) {
-        _showError(next.error!);
-      }
-    });
-  }
-
   void _showError(String message) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -94,6 +76,22 @@ class _AuthBottomSheetState extends ConsumerState<AuthBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<AuthState>(
+      authProvider,
+          (previous, next) {
+        if (!mounted) return;
+
+        if (next.status == AuthStatus.authenticated) {
+          // Close bottom sheet when authenticated
+          Navigator.of(context).pop();
+        }
+
+        if (next.status == AuthStatus.error && next.error != null) {
+          _showError(next.error!);
+        }
+      },
+    );
+
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.yellow,
@@ -127,7 +125,7 @@ class _AuthBottomSheetState extends ConsumerState<AuthBottomSheet> {
                       style: AppTypography.input,
                       decoration: InputDecoration(
                         hintText:
-                            widget.isRestore ? 'Secret' : 'Enter your name',
+                        widget.isRestore ? 'Secret' : 'Enter your name',
                         hintStyle: AppTypography.input.copyWith(
                           color: AppColors.black.withOpacity(0.3),
                         ),
@@ -148,8 +146,8 @@ class _AuthBottomSheetState extends ConsumerState<AuthBottomSheet> {
                 text: _isLoading
                     ? 'Please wait...'
                     : (widget.isRestore
-                        ? 'Restore account'
-                        : 'Setup my account'),
+                    ? 'Restore account'
+                    : 'Setup my account'),
                 color: AppColors.white,
                 onPressed: _isLoading ? null : _handleAuth,
                 showDivider: true,
@@ -171,7 +169,8 @@ class SplashScreen extends ConsumerStatefulWidget {
 
 class _SplashScreenState extends ConsumerState<SplashScreen> {
   bool _isChecking = true;
-  String? _userName; // Add state variable for userName
+  String? _userName;
+  bool _hasSession = false;
 
   @override
   void initState() {
@@ -184,25 +183,36 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       final sessionManager = ref.read(sessionManagerProvider);
       final storage = ref.read(sessionStorageProvider);
 
-      // Fetch stored name AND check session in parallel
+      setState(() => _isChecking = true);
+
       final userName = await storage.getUserName();
       final hasSession = await sessionManager.restoreSession();
+
+      debugPrint('Session check - Username: $userName, HasSession: $hasSession');
 
       if (mounted) {
         setState(() {
           _userName = userName;
+          _hasSession = hasSession;
           _isChecking = false;
         });
 
         if (hasSession && sessionManager.currentUser != null) {
           ref.read(authProvider.notifier).setAuthenticated(
-                sessionManager.currentUser!,
-              );
+            sessionManager.currentUser!,
+          );
         }
+
+        // Force rebuild if _userName changes
+        Future.microtask(() => setState(() {}));
       }
     } catch (e) {
+      debugPrint('Error in session check: $e');
       if (mounted) {
-        setState(() => _isChecking = false);
+        setState(() {
+          _isChecking = false;
+          _hasSession = false;
+        });
         _showError('Error checking session: $e');
       }
     }
@@ -221,16 +231,17 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   Widget _buildLoadingScreen() {
     final screenHeight = MediaQuery.of(context).size.height;
 
+    debugPrint('Building loading screen with username: $_userName');
+
     return Scaffold(
       backgroundColor: AppColors.black,
       body: Stack(
         children: [
-          // Logo Section - positioned at ~30% from top
+          // Logo Section
           Positioned(
             left: 0,
             right: 0,
-            top: screenHeight *
-                0.306, // Matches Figma's 306px position relatively
+            top: screenHeight * 0.306,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -265,7 +276,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                // Remember everything text
                 Text(
                   'Remember everything',
                   style: AppTypography.subtitle.copyWith(
@@ -280,12 +290,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             ),
           ),
 
-          // Welcome back text - positioned at ~45% from top
+          // Welcome back text
           Positioned(
             left: 0,
             right: 0,
-            top: screenHeight *
-                0.459, // Matches Figma's 459px position relatively
+            top: screenHeight * 0.459,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 62),
               child: Text(
@@ -301,12 +310,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             ),
           ),
 
-          // Loading text - positioned at ~77% from top
+          // Loading indicator and text
           Positioned(
             left: 0,
             right: 0,
-            top: screenHeight *
-                0.709, // Matches Figma's 709px position relatively
+            top: screenHeight * 0.709,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -341,19 +349,19 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      isDismissible: !isRestore, // Prevent dismissal during restore
+      isDismissible: !isRestore,
       builder: (context) => AuthBottomSheet(isRestore: isRestore),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    // _ still checking session, show loading
-    if (_isChecking) {
+    // If checking or has valid session, show loading screen
+    if (_isChecking || _hasSession) {
       return _buildLoadingScreen();
     }
 
-    // Show normal splash screen if no valid session
+    // Show normal splash screen
     return Scaffold(
       backgroundColor: AppColors.black,
       body: SafeArea(
