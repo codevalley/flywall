@@ -9,7 +9,7 @@ class AppTypography {
   // Core text styles (used by theme system)
   static TextStyle get megaTitle => const TextStyle(
         fontFamily: blackerDisplay,
-        fontSize: 144,
+        fontSize: 126, // Reduced from 144
         fontWeight: FontWeight.w900,
         color: AppColors.textPrimary,
         height: 1,
@@ -17,7 +17,7 @@ class AppTypography {
 
   static TextStyle get logo => const TextStyle(
         fontFamily: graphik,
-        fontSize: 64,
+        fontSize: 56, // Reduced from 64
         fontWeight: FontWeight.w900,
         color: AppColors.textPrimary,
         height: 1,
@@ -31,7 +31,7 @@ class AppTypography {
 
   static TextStyle get heading1 => const TextStyle(
         fontFamily: blackerDisplay,
-        fontSize: 48,
+        fontSize: 42, // Reduced from 48
         fontWeight: FontWeight.w700,
         color: AppColors.textPrimary,
         height: 1.2,
@@ -39,7 +39,7 @@ class AppTypography {
 
   static TextStyle get heading2 => const TextStyle(
         fontFamily: blackerDisplay,
-        fontSize: 36,
+        fontSize: 32, // Reduced from 36
         fontWeight: FontWeight.w700,
         color: AppColors.textPrimary,
         height: 1.2,
@@ -47,7 +47,7 @@ class AppTypography {
 
   static TextStyle get subtitle => const TextStyle(
         fontFamily: blackerDisplay,
-        fontSize: 24,
+        fontSize: 21, // Reduced from 24
         fontWeight: FontWeight.w400,
         color: AppColors.textPrimary,
         height: 1.2,
@@ -55,7 +55,7 @@ class AppTypography {
 
   static TextStyle get body => const TextStyle(
         fontFamily: graphik,
-        fontSize: 16,
+        fontSize: 14, // Reduced from 16
         fontWeight: FontWeight.w400,
         color: AppColors.textPrimary,
         height: 1.5,
@@ -63,7 +63,7 @@ class AppTypography {
 
   static TextStyle get caption => const TextStyle(
         fontFamily: graphik,
-        fontSize: 14,
+        fontSize: 12, // Reduced from 14
         fontWeight: FontWeight.w300,
         color: AppColors.textSecondary,
         height: 1.4,
@@ -72,7 +72,7 @@ class AppTypography {
   // Input styles
   static TextStyle get input => const TextStyle(
         fontFamily: blackerDisplay,
-        fontSize: 44,
+        fontSize: 32, // Reduced from 44
         fontWeight: FontWeight.w700,
         color: AppColors.black,
         height: 1,
@@ -80,9 +80,9 @@ class AppTypography {
 
   static TextStyle get inputLabel => const TextStyle(
         fontFamily: blackerDisplay,
-        fontSize: 24,
+        fontSize: 21, // Reduced from 24
         fontWeight: FontWeight.w700,
-        color: AppColors.black,
+        color: AppColors.white, // Changed to white for bottom sheet
         height: 1.2,
       );
 
@@ -96,7 +96,7 @@ class AppTypography {
 
   static TextStyle get buttonSerif => const TextStyle(
         fontFamily: blackerDisplay,
-        fontSize: 18,
+        fontSize: 18, // Kept original size as requested
         fontWeight: FontWeight.w400,
         height: 1,
       );

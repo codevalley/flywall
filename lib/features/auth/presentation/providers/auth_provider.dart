@@ -43,6 +43,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   AuthNotifier(this._sessionManager) : super(const AuthState());
 
+  void setAuthenticated(User user) {
+    state = AuthState(
+      status: AuthStatus.authenticated,
+      user: user,
+    );
+  }
+
   Future<bool> checkAuth() async {
     try {
       state = state.copyWith(status: AuthStatus.loading);
