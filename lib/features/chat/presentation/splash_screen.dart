@@ -5,6 +5,7 @@ import '../../../core/theme/theme.dart';
 import '../../../core/widgets/app_logo.dart';
 import '../../../core/widgets/buttons.dart';
 import '../../auth/presentation/providers/auth_provider.dart';
+import '../../../core/providers/core_providers.dart';
 
 // Separate widget for the bottom sheet
 class AuthBottomSheet extends ConsumerStatefulWidget {
@@ -170,6 +171,7 @@ class SplashScreen extends ConsumerStatefulWidget {
 
 class _SplashScreenState extends ConsumerState<SplashScreen> {
   bool _isChecking = true;
+  String? _userName; // Add state variable for userName
 
   @override
   void initState() {
@@ -180,29 +182,158 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   Future<void> _checkExistingSession() async {
     try {
       final sessionManager = ref.read(sessionManagerProvider);
+      final storage = ref.read(sessionStorageProvider);
+
+      // Fetch stored name AND check session in parallel
+      final userName = await storage.getUserName();
       final hasSession = await sessionManager.restoreSession();
 
       if (mounted) {
-        setState(() => _isChecking = false);
+        setState(() {
+          _userName = userName;
+          _isChecking = false;
+        });
 
-        if (hasSession) {
-          // Session restored successfully
-          ref
-              .read(authProvider.notifier)
-              .setAuthenticated(sessionManager.currentUser!);
+        if (hasSession && sessionManager.currentUser != null) {
+          ref.read(authProvider.notifier).setAuthenticated(
+                sessionManager.currentUser!,
+              );
         }
       }
     } catch (e) {
       if (mounted) {
         setState(() => _isChecking = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error checking session: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        _showError('Error checking session: $e');
       }
     }
+  }
+
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
+  Widget _buildLoadingScreen() {
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    return Scaffold(
+      backgroundColor: AppColors.black,
+      body: Stack(
+        children: [
+          // Logo Section - positioned at ~30% from top
+          Positioned(
+            left: 0,
+            right: 0,
+            top: screenHeight *
+                0.306, // Matches Figma's 306px position relatively
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Logo text
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 54),
+                  child: Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: 'SIDE',
+                          style: AppTypography.logo.copyWith(
+                            color: AppColors.grey,
+                            fontSize: 64,
+                            fontStyle: FontStyle.italic,
+                            fontWeight: FontWeight.w500,
+                            height: 0,
+                          ),
+                        ),
+                        TextSpan(
+                          text: 'KICK',
+                          style: AppTypography.logo.copyWith(
+                            color: AppColors.white,
+                            fontSize: 64,
+                            fontWeight: FontWeight.w900,
+                            height: 0,
+                          ),
+                        ),
+                      ],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                // Remember everything text
+                Text(
+                  'Remember everything',
+                  style: AppTypography.subtitle.copyWith(
+                    color: AppColors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w400,
+                    height: 0,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+
+          // Welcome back text - positioned at ~45% from top
+          Positioned(
+            left: 0,
+            right: 0,
+            top: screenHeight *
+                0.459, // Matches Figma's 459px position relatively
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 62),
+              child: Text(
+                _userName != null ? 'Welcome back, $_userName' : 'Welcome back',
+                textAlign: TextAlign.center,
+                style: AppTypography.heading1.copyWith(
+                  color: AppColors.yellow,
+                  fontSize: 36,
+                  fontWeight: FontWeight.w700,
+                  height: 0,
+                ),
+              ),
+            ),
+          ),
+
+          // Loading text - positioned at ~77% from top
+          Positioned(
+            left: 0,
+            right: 0,
+            top: screenHeight *
+                0.709, // Matches Figma's 709px position relatively
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation(AppColors.yellow),
+                  strokeWidth: 2,
+                ),
+                const SizedBox(height: 24),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 88),
+                  child: Text(
+                    'loading your profile',
+                    textAlign: TextAlign.center,
+                    style: AppTypography.subtitle.copyWith(
+                      color: AppColors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                      height: 0,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showBottomSheet(bool isRestore) {
@@ -217,16 +348,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // If still checking session, show loading
+    // _ still checking session, show loading
     if (_isChecking) {
-      return const Scaffold(
-        backgroundColor: AppColors.black,
-        body: Center(
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation(AppColors.yellow),
-          ),
-        ),
-      );
+      return _buildLoadingScreen();
     }
 
     // Show normal splash screen if no valid session
