@@ -44,6 +44,7 @@ dependencies:
   dartz: ^0.10.1
   hive: ^2.2.3
   hive_flutter: ^1.1.0
+  flutter_svg: ^2.0.9
 
 dev_dependencies:
   flutter_test:
@@ -73,18 +74,21 @@ flutter:
   fonts:
     - family: Blacker Display
       fonts:
+        - asset: assets/fonts/BlackerDisplay-Regular.ttf
+        - asset: assets/fonts/BlackerDisplay-Bold.ttf
+          weight: 700
         - asset: assets/fonts/BlackerDisplay-Black.ttf
           weight: 900
-        - asset: assets/fonts/BlackerDisplay-Bold.ttf
-          weight: 600
-        - asset: assets/fonts/BlackerDisplay-Regular.ttf
-          weight: 400
+        - asset: assets/fonts/BlackerDisplay-Medium-Italic.ttf
+          style: italic
+          weight: 500
     - family: Graphik
       fonts:
         - asset: assets/fonts/Graphik-Regular.otf
-          weight: 400
         - asset: assets/fonts/Graphik-Light.otf
           weight: 300
+        - asset: assets/fonts/Graphik-Medium.ttf
+          weight: 500
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
