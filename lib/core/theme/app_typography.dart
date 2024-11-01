@@ -102,4 +102,16 @@ class AppTypography {
       );
 
   static TextStyle get buttonSerif => button;
+
+  static TextStyle get welcomeText => const TextStyle(
+        fontFamily: blackerDisplay,
+        fontSize: 21, // 2/3 of heading2's 32px
+        fontWeight: FontWeight.w700,
+        color: AppColors.textPrimary,
+        height: 1.3,
+      );
+
+  static TextStyle get inputAction => buttonAction.copyWith(
+        fontSize: 18, // 20% smaller than buttonAction's 22px
+      );
 }

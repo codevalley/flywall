@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../widgets/search_input.dart';
 import '../widgets/message_list.dart';
 import '../widgets/entity/entity_detail_view.dart';
-import '../widgets/chat_title_bar.dart';
 import 'providers/chat_provider.dart';
 import 'providers/entity_provider.dart';
 import '../../../core/providers/core_providers.dart';
+import '../../../core/theme/theme.dart';
+import '../../../core/widgets/app_logo.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key});
@@ -49,21 +49,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
   }
 
-  Future<void> _copyUserSecret() async {
-    if (_userSecret != null) {
-      await Clipboard.setData(ClipboardData(text: _userSecret!));
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('User secret copied to clipboard'),
-            behavior: SnackBarBehavior.floating,
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final chatState = ref.watch(chatProvider);
@@ -80,26 +65,40 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
       if (next.error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(next.error!),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(next.error!), backgroundColor: Colors.red),
         );
       }
     });
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: AppColors.black,
       body: SafeArea(
         child: Stack(
           children: [
             Column(
               children: [
-                ChatTitleBar(
-                  userSecret: _userSecret,
-                  onCopy: _copyUserSecret,
+                const SizedBox(height: 48),
+                // Logo Section
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 32),
+                  child: AppLogo(),
                 ),
-                if (hasMessages)
+
+                if (!hasMessages) ...[
+                  const Spacer(),
+                  // Welcome Message with new style
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 62),
+                    child: Text(
+                      'I can help with your existing information\n\nor help create new topics, tasks or notes.',
+                      textAlign: TextAlign.center,
+                      style: AppTypography.welcomeText.copyWith(
+                        color: AppColors.yellow,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                ] else
                   Expanded(
                     child: MessageList(
                       messages: chatState.messages,
@@ -107,10 +106,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       isThreadComplete: isThreadComplete,
                     ),
                   ),
+
+                // Input Section
                 SearchInput(
                   onSubmitted: (input) {
                     if (input.trim().isNotEmpty) {
-                      // Clear previous thread if completed
                       if (isThreadComplete) {
                         ref.read(chatProvider.notifier).clearThread();
                       }
@@ -119,29 +119,24 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   },
                   enabled: !chatState.isLoading,
                   isThreadActive: hasMessages,
-                  userName: _userName,
                 ),
               ],
             ),
+
+            // Loading Indicator
             if (chatState.isLoading)
-              Positioned(
-                bottom: 90, // Position loader just above the search box
-                right: 32,
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 4,
-                      ),
-                    ],
+              const Positioned(
+                bottom: 90,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation(AppColors.yellow),
                   ),
-                  child: const CircularProgressIndicator(),
                 ),
               ),
+
+            // Entity Detail View
             if (selectedEntity != null)
               Positioned.fill(
                 child: GestureDetector(
