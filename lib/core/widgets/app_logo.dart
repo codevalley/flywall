@@ -52,15 +52,23 @@ class _AppLogoState extends State<AppLogo> with SingleTickerProviderStateMixin {
             children: [
               TextSpan(
                 text: 'SIDE',
-                style: AppTypography.logo.copyWith(
+                style: TextStyle(
+                  fontFamily: 'Blacker Display',
+                  fontSize: 56,
                   fontWeight: FontWeight.w300,
                   fontStyle: FontStyle.italic,
+                  color: AppColors.textSecondary,
+                  height: 1,
                 ),
               ),
               TextSpan(
                 text: 'KICK',
-                style: AppTypography.logo.copyWith(
+                style: TextStyle(
+                  fontFamily: 'Blacker Display',
+                  fontSize: 56,
                   fontWeight: FontWeight.w900,
+                  color: AppColors.textPrimary,
+                  height: 1,
                 ),
               ),
             ],

@@ -52,6 +52,7 @@ class BottomRowButton extends StatelessWidget {
   final Color color;
   final VoidCallback? onPressed;
   final bool showDivider;
+  final bool showSpinner;
 
   const BottomRowButton({
     super.key,
@@ -59,6 +60,7 @@ class BottomRowButton extends StatelessWidget {
     required this.color,
     required this.onPressed,
     this.showDivider = true,
+    this.showSpinner = false,
   });
 
   @override
@@ -67,18 +69,25 @@ class BottomRowButton extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         if (showDivider)
-          Container(
-            height: 1,
-            color: AppColors.white.withOpacity(0.3),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Container(
+              height: 1,
+              color: AppColors.white,
+            ),
           ),
         Material(
           color: Colors.transparent,
           child: InkWell(
             onTap: onPressed,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: 18,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
                     text,
@@ -86,14 +95,25 @@ class BottomRowButton extends StatelessWidget {
                       color: onPressed == null ? AppColors.textDisabled : color,
                     ),
                   ),
-                  Transform.rotate(
-                    angle: -45 * 3.14 / 180,
-                    child: Icon(
-                      Icons.arrow_forward,
-                      color: onPressed == null ? AppColors.textDisabled : color,
-                      size: 20,
+                  if (showSpinner)
+                    SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation(color),
+                      ),
+                    )
+                  else
+                    Transform.rotate(
+                      angle: -45 * 3.14 / 180,
+                      child: Icon(
+                        Icons.arrow_forward,
+                        color:
+                            onPressed == null ? AppColors.textDisabled : color,
+                        size: 20,
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),

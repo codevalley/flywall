@@ -6,6 +6,7 @@ import '../../../core/widgets/app_logo.dart';
 import '../../../core/widgets/buttons.dart';
 import '../../auth/presentation/providers/auth_provider.dart';
 import '../../../core/providers/core_providers.dart';
+import 'package:flutter/services.dart';
 
 // Separate widget for the bottom sheet
 class AuthBottomSheet extends ConsumerStatefulWidget {
@@ -23,17 +24,29 @@ class AuthBottomSheet extends ConsumerStatefulWidget {
 class _AuthBottomSheetState extends ConsumerState<AuthBottomSheet> {
   late final TextEditingController _controller;
   bool _isLoading = false;
+  bool _showWelcome = false;
+  String? _enteredValue;
+  String? _actualSecret; // Store the actual secret separately
+  bool _showTextField = true;
 
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController();
+    _controller.addListener(_onTextChanged);
   }
 
   @override
   void dispose() {
+    _controller.removeListener(_onTextChanged);
     _controller.dispose();
     super.dispose();
+  }
+
+  void _onTextChanged() {
+    setState(() {
+      _enteredValue = _controller.text.trim();
+    });
   }
 
   void _showError(String message) {
@@ -47,29 +60,55 @@ class _AuthBottomSheetState extends ConsumerState<AuthBottomSheet> {
     );
   }
 
+  String _formatSecretText(String text) {
+    if (text.length <= 6) return text;
+    return '${text.substring(0, 3)}•••${text.substring(text.length - 3)}';
+  }
+
+  Future<void> _pasteFromClipboard() async {
+    final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
+    if (clipboardData?.text != null) {
+      setState(() {
+        _actualSecret = clipboardData!.text!.trim(); // Store actual secret
+        _controller.text =
+            _formatSecretText(_actualSecret!); // Show formatted version
+        _enteredValue = _actualSecret; // Use this for authentication
+      });
+    }
+  }
+
   Future<void> _handleAuth() async {
     if (_isLoading) return;
 
-    final value = _controller.text.trim();
-    if (value.isEmpty) {
+    final value = widget.isRestore ? _actualSecret : _controller.text;
+    if (value?.isEmpty ?? true) {
       _showError(widget.isRestore
           ? 'Please enter your secret'
           : 'Please enter your name');
       return;
     }
 
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _showWelcome = true;
+      _showTextField = false;
+      _enteredValue = value;
+    });
 
     try {
       if (widget.isRestore) {
-        await ref.read(authProvider.notifier).checkAuth();
+        await ref.read(authProvider.notifier).checkAuth(value);
       } else {
-        await ref.read(authProvider.notifier).registerAndLogin(value);
+        await ref.read(authProvider.notifier).registerAndLogin(value!);
       }
     } catch (e) {
       if (mounted) {
         _showError(e.toString());
-        setState(() => _isLoading = false);
+        setState(() {
+          _isLoading = false;
+          _showWelcome = false;
+          _showTextField = true;
+        });
       }
     }
   }
@@ -82,7 +121,6 @@ class _AuthBottomSheetState extends ConsumerState<AuthBottomSheet> {
         if (!mounted) return;
 
         if (next.status == AuthStatus.authenticated) {
-          // Close bottom sheet when authenticated
           Navigator.of(context).pop();
         }
 
@@ -106,53 +144,106 @@ class _AuthBottomSheetState extends ConsumerState<AuthBottomSheet> {
         child: SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.isRestore
-                          ? 'Enter your secret'
-                          : "What's your name?",
-                      style: AppTypography.inputLabel.copyWith(
-                        color: AppColors.black,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    TextField(
-                      controller: _controller,
-                      style: AppTypography.input,
-                      decoration: InputDecoration(
-                        hintText:
-                            widget.isRestore ? 'Secret' : 'Enter your name',
-                        hintStyle: AppTypography.input.copyWith(
-                          color: AppColors.black.withOpacity(0.3),
+              AnimatedSize(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOut,
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AnimatedSlide(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOut,
+                        offset:
+                            _showTextField ? Offset.zero : const Offset(0, 0.2),
+                        child: AnimatedCrossFade(
+                          duration: const Duration(milliseconds: 300),
+                          firstChild: Text(
+                            widget.isRestore
+                                ? 'Enter your secret'
+                                : "What's your name?",
+                            style: AppTypography.inputLabel.copyWith(
+                              color: AppColors.black,
+                            ),
+                          ),
+                          secondChild: Text(
+                            widget.isRestore
+                                ? 'Welcome back'
+                                : 'Welcome, ${_enteredValue ?? ""}',
+                            style: AppTypography.heading2.copyWith(
+                              color: AppColors.black,
+                            ),
+                          ),
+                          crossFadeState: _showWelcome
+                              ? CrossFadeState.showSecond
+                              : CrossFadeState.showFirst,
                         ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                        filled: true,
-                        fillColor: AppColors.white.withOpacity(0.1),
-                        enabled: !_isLoading,
                       ),
-                      onSubmitted: (_) => _handleAuth(),
-                    ),
-                  ],
+                      if (_showTextField) ...[
+                        const SizedBox(height: 24),
+                        AnimatedOpacity(
+                          duration: const Duration(milliseconds: 200),
+                          opacity: _showTextField ? 1.0 : 0.0,
+                          child: SizedBox(
+                            height: 64,
+                            child: TextField(
+                              controller: _controller,
+                              style: AppTypography.input,
+                              enabled: !_isLoading,
+                              readOnly: widget.isRestore,
+                              decoration: InputDecoration(
+                                hintText: widget.isRestore
+                                    ? 'Tap to paste your secret'
+                                    : 'Enter your name',
+                                hintStyle: AppTypography.input.copyWith(
+                                  color: AppColors.black.withOpacity(0.3),
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide.none,
+                                ),
+                                filled: true,
+                                fillColor: AppColors.white.withOpacity(0.1),
+                                isCollapsed: true,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
+                                suffixIcon: widget.isRestore
+                                    ? IconButton(
+                                        icon: const Icon(
+                                          Icons.content_paste_rounded,
+                                          color: AppColors.black,
+                                        ),
+                                        onPressed: _isLoading
+                                            ? null
+                                            : _pasteFromClipboard,
+                                      )
+                                    : null,
+                              ),
+                              onTap:
+                                  widget.isRestore ? _pasteFromClipboard : null,
+                              onSubmitted: (_) => _handleAuth(),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
               ),
               BottomRowButton(
                 text: _isLoading
-                    ? 'Please wait...'
+                    ? (widget.isRestore ? 'Restoring...' : 'Getting ready...')
                     : (widget.isRestore
                         ? 'Restore account'
                         : 'Setup my account'),
                 color: AppColors.white,
                 onPressed: _isLoading ? null : _handleAuth,
                 showDivider: true,
+                showSpinner: _isLoading,
               ),
             ],
           ),
@@ -173,6 +264,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   bool _isChecking = true;
   String? _userName;
   bool _hasSession = false;
+  bool _isBottomSheetVisible = false;
 
   @override
   void initState() {
@@ -295,23 +387,27 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   }
 
   void _showBottomSheet(bool isRestore) {
+    setState(() => _isBottomSheetVisible = true);
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       isDismissible: !isRestore,
       builder: (context) => AuthBottomSheet(isRestore: isRestore),
-    );
+    ).whenComplete(() {
+      if (mounted) {
+        setState(() => _isBottomSheetVisible = false);
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    // If checking or has valid session, show loading screen
     if (_isChecking || _hasSession) {
       return _buildLoadingScreen();
     }
 
-    // Show normal splash screen
     return Scaffold(
       backgroundColor: AppColors.black,
       body: SafeArea(
@@ -323,13 +419,22 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
               child: AppLogo(),
             ),
             const Spacer(),
-            // Moved Get Started section to middle
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: OutlinedActionButton(
-                text: 'Get started',
-                color: AppColors.green,
-                onPressed: () => _showBottomSheet(false),
+            // Animate the Get Started button
+            AnimatedSlide(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              offset: _isBottomSheetVisible ? const Offset(0, 1) : Offset.zero,
+              child: AnimatedOpacity(
+                duration: const Duration(milliseconds: 200),
+                opacity: _isBottomSheetVisible ? 0.0 : 1.0,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: OutlinedActionButton(
+                    text: 'Get started',
+                    color: AppColors.green,
+                    onPressed: () => _showBottomSheet(false),
+                  ),
+                ),
               ),
             ),
             const Spacer(),

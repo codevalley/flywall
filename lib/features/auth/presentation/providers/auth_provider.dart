@@ -50,10 +50,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
     );
   }
 
-  Future<bool> checkAuth() async {
+  Future<bool> checkAuth([String? secret]) async {
     try {
       state = state.copyWith(status: AuthStatus.loading);
-      final success = await _sessionManager.restoreSession();
+
+      // If secret is provided, use it for restoration
+      final success = secret != null
+          ? await _sessionManager.restoreWithSecret(secret)
+          : await _sessionManager.restoreSession();
 
       if (success) {
         state = state.copyWith(
@@ -61,7 +65,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
           user: _sessionManager.currentUser,
         );
       } else {
-        state = state.copyWith(status: AuthStatus.initial);
+        state = state.copyWith(
+          status: AuthStatus.error,
+          error: 'Invalid secret or session expired',
+        );
       }
 
       return success;

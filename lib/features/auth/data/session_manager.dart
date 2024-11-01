@@ -62,6 +62,19 @@ class SessionManager {
     }
   }
 
+  Future<bool> restoreWithSecret(String secret) async {
+    try {
+      debugPrint('Restoring session with provided secret');
+      // Clear any existing session first
+      await logout();
+      // Attempt to login with the provided secret
+      return login(secret);
+    } catch (e) {
+      debugPrint('Restore with secret error: $e');
+      throw AuthException('Invalid secret or session expired');
+    }
+  }
+
   Future<User> register(String screenName) async {
     try {
       debugPrint('Attempting registration for: $screenName');
@@ -120,11 +133,16 @@ class SessionManager {
   }
 
   Future<bool> restoreSession() async {
-    final userSecret = await _storage.getUserSecret();
-    debugPrint('Restoring session with secret: $userSecret');
-    if (userSecret != null) {
-      return login(userSecret);
+    try {
+      final userSecret = await _storage.getUserSecret();
+      debugPrint('Restoring session with stored secret: $userSecret');
+      if (userSecret != null) {
+        return login(userSecret);
+      }
+      return false;
+    } catch (e) {
+      debugPrint('Restore session error: $e');
+      return false;
     }
-    return false;
   }
 }
