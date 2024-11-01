@@ -33,7 +33,7 @@ class OutlinedActionButton extends StatelessWidget {
         children: [
           Text(
             text,
-            style: AppTypography.buttonSerif.copyWith(color: color),
+            style: AppTypography.buttonAction.copyWith(color: color),
           ),
           const SizedBox(width: 8),
           Icon(
@@ -82,7 +82,7 @@ class BottomRowButton extends StatelessWidget {
                 children: [
                   Text(
                     text,
-                    style: AppTypography.buttonSerif.copyWith(
+                    style: AppTypography.button.copyWith(
                       color: onPressed == null ? AppColors.textDisabled : color,
                     ),
                   ),

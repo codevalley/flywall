@@ -78,7 +78,7 @@ class _AuthBottomSheetState extends ConsumerState<AuthBottomSheet> {
   Widget build(BuildContext context) {
     ref.listen<AuthState>(
       authProvider,
-          (previous, next) {
+      (previous, next) {
         if (!mounted) return;
 
         if (next.status == AuthStatus.authenticated) {
@@ -117,7 +117,9 @@ class _AuthBottomSheetState extends ConsumerState<AuthBottomSheet> {
                       widget.isRestore
                           ? 'Enter your secret'
                           : "What's your name?",
-                      style: AppTypography.inputLabel,
+                      style: AppTypography.inputLabel.copyWith(
+                        color: AppColors.black,
+                      ),
                     ),
                     const SizedBox(height: 24),
                     TextField(
@@ -125,7 +127,7 @@ class _AuthBottomSheetState extends ConsumerState<AuthBottomSheet> {
                       style: AppTypography.input,
                       decoration: InputDecoration(
                         hintText:
-                        widget.isRestore ? 'Secret' : 'Enter your name',
+                            widget.isRestore ? 'Secret' : 'Enter your name',
                         hintStyle: AppTypography.input.copyWith(
                           color: AppColors.black.withOpacity(0.3),
                         ),
@@ -146,8 +148,8 @@ class _AuthBottomSheetState extends ConsumerState<AuthBottomSheet> {
                 text: _isLoading
                     ? 'Please wait...'
                     : (widget.isRestore
-                    ? 'Restore account'
-                    : 'Setup my account'),
+                        ? 'Restore account'
+                        : 'Setup my account'),
                 color: AppColors.white,
                 onPressed: _isLoading ? null : _handleAuth,
                 showDivider: true,
@@ -188,7 +190,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       final userName = await storage.getUserName();
       final hasSession = await sessionManager.restoreSession();
 
-      debugPrint('Session check - Username: $userName, HasSession: $hasSession');
+      debugPrint(
+          'Session check - Username: $userName, HasSession: $hasSession');
 
       if (mounted) {
         setState(() {
@@ -199,8 +202,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
         if (hasSession && sessionManager.currentUser != null) {
           ref.read(authProvider.notifier).setAuthenticated(
-            sessionManager.currentUser!,
-          );
+                sessionManager.currentUser!,
+              );
         }
 
         // Force rebuild if _userName changes
@@ -229,73 +232,22 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   }
 
   Widget _buildLoadingScreen() {
-    final screenHeight = MediaQuery.of(context).size.height;
-
-    debugPrint('Building loading screen with username: $_userName');
-
     return Scaffold(
       backgroundColor: AppColors.black,
-      body: Stack(
-        children: [
-          // Logo Section
-          Positioned(
-            left: 0,
-            right: 0,
-            top: screenHeight * 0.306,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Logo text
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 54),
-                  child: Text.rich(
-                    TextSpan(
-                      children: [
-                        TextSpan(
-                          text: 'SIDE',
-                          style: AppTypography.logo.copyWith(
-                            color: AppColors.grey,
-                            fontSize: 64,
-                            fontStyle: FontStyle.italic,
-                            fontWeight: FontWeight.w500,
-                            height: 0,
-                          ),
-                        ),
-                        TextSpan(
-                          text: 'KICK',
-                          style: AppTypography.logo.copyWith(
-                            color: AppColors.white,
-                            fontSize: 64,
-                            fontWeight: FontWeight.w900,
-                            height: 0,
-                          ),
-                        ),
-                      ],
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  'Remember everything',
-                  style: AppTypography.subtitle.copyWith(
-                    color: AppColors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.w400,
-                    height: 0,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
+      body: SafeArea(
+        child: Column(
+          children: [
+            const SizedBox(height: 48),
+            // Logo Section
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 32),
+              child: AppLogo(),
             ),
-          ),
 
-          // Welcome back text
-          Positioned(
-            left: 0,
-            right: 0,
-            top: screenHeight * 0.459,
-            child: Padding(
+            const SizedBox(height: 48), // Space between logo and welcome text
+
+            // Welcome back text
+            Padding(
               padding: const EdgeInsets.symmetric(horizontal: 62),
               child: Text(
                 _userName != null ? 'Welcome back, $_userName' : 'Welcome back',
@@ -308,14 +260,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                 ),
               ),
             ),
-          ),
 
-          // Loading indicator and text
-          Positioned(
-            left: 0,
-            right: 0,
-            top: screenHeight * 0.709,
-            child: Column(
+            const Spacer(), // Push loading indicator to bottom
+
+            // Loading indicator and text
+            Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 const CircularProgressIndicator(
@@ -338,8 +287,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                 ),
               ],
             ),
-          ),
-        ],
+            const SizedBox(height: 80), // Bottom padding
+          ],
+        ),
       ),
     );
   }
@@ -368,29 +318,28 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         child: Column(
           children: [
             const SizedBox(height: 48),
-            const Expanded(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 32),
-                child: AppLogo(),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 32),
+              child: AppLogo(),
+            ),
+            const Spacer(),
+            // Moved Get Started section to middle
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: OutlinedActionButton(
+                text: 'Get started',
+                color: AppColors.green,
+                onPressed: () => _showBottomSheet(false),
               ),
             ),
+            const Spacer(),
+            // Keep Restore button at bottom
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  OutlinedActionButton(
-                    text: 'Get started',
-                    color: AppColors.green,
-                    onPressed: () => _showBottomSheet(false),
-                  ),
-                  const SizedBox(height: 32),
-                  BottomRowButton(
-                    text: 'Restore',
-                    color: AppColors.yellow,
-                    onPressed: () => _showBottomSheet(true),
-                  ),
-                ],
+              padding: const EdgeInsets.only(bottom: 24),
+              child: BottomRowButton(
+                text: 'Restore',
+                color: AppColors.yellow,
+                onPressed: () => _showBottomSheet(true),
               ),
             ),
           ],
