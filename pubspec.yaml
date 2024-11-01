@@ -87,7 +87,7 @@ flutter:
         - asset: assets/fonts/Graphik-Regular.otf
         - asset: assets/fonts/Graphik-Light.otf
           weight: 300
-        - asset: assets/fonts/Graphik-Medium.ttf
+        - asset: assets/fonts/Graphik-Medium.otf
           weight: 500
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
