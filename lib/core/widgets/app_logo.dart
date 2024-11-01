@@ -74,7 +74,7 @@ class _AppLogoState extends State<AppLogo> with SingleTickerProviderStateMixin {
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 4),
         Text(
           'Remember everything',
           style: AppTypography.subtitle,

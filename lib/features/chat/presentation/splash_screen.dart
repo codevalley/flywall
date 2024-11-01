@@ -346,7 +346,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
               child: AppLogo(),
             ),
 
-            const SizedBox(height: 48), // Space between logo and welcome text
+            const SizedBox(height: 80),
 
             // Welcome back text
             Padding(
@@ -363,33 +363,35 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
               ),
             ),
 
-            const Spacer(), // Push loading indicator to bottom
+            const Spacer(),
 
             // Loading indicator and text
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation(AppColors.yellow),
-                  strokeWidth: 2,
-                ),
-                const SizedBox(height: 24),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 88),
-                  child: Text(
-                    'loading your profile',
-                    textAlign: TextAlign.center,
-                    style: AppTypography.subtitle.copyWith(
-                      color: AppColors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                      height: 0,
+            Padding(
+              padding: const EdgeInsets.only(bottom: 120),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation(AppColors.white),
+                    strokeWidth: 2,
+                  ),
+                  const SizedBox(height: 24),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 88),
+                    child: Text(
+                      'loading your profile',
+                      textAlign: TextAlign.center,
+                      style: AppTypography.subtitle.copyWith(
+                        color: AppColors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                        height: 0,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-            const SizedBox(height: 80), // Bottom padding
           ],
         ),
       ),
