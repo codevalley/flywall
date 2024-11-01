@@ -274,32 +274,42 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   Future<void> _checkExistingSession() async {
     try {
-      final sessionManager = ref.read(sessionManagerProvider);
       final storage = ref.read(sessionStorageProvider);
+      final sessionManager = ref.read(sessionManagerProvider);
 
-      setState(() => _isChecking = true);
-
+      // First quickly check if we have a username stored
       final userName = await storage.getUserName();
-      final hasSession = await sessionManager.restoreSession();
-
-      debugPrint(
-          'Session check - Username: $userName, HasSession: $hasSession');
-
       if (mounted) {
         setState(() {
           _userName = userName;
-          _hasSession = hasSession;
-          _isChecking = false;
+          _isChecking =
+              storage.hasSession(); // Only show loading if we have a session
         });
+      }
 
-        if (hasSession && sessionManager.currentUser != null) {
-          ref.read(authProvider.notifier).setAuthenticated(
-                sessionManager.currentUser!,
-              );
+      // Then attempt to restore the session if we have one
+      if (storage.hasSession()) {
+        final hasSession = await sessionManager.restoreSession();
+
+        if (mounted) {
+          setState(() {
+            _hasSession = hasSession;
+            _isChecking = false;
+          });
+
+          if (hasSession && sessionManager.currentUser != null) {
+            ref.read(authProvider.notifier).setAuthenticated(
+                  sessionManager.currentUser!,
+                );
+          }
         }
-
-        // Force rebuild if _userName changes
-        Future.microtask(() => setState(() {}));
+      } else {
+        if (mounted) {
+          setState(() {
+            _isChecking = false;
+            _hasSession = false;
+          });
+        }
       }
     } catch (e) {
       debugPrint('Error in session check: $e');
