@@ -1,257 +1,194 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/models/entity.dart';
-import 'entity_detail_view.dart';
+import '../../../../core/theme/theme.dart';
 
-class EntityCard extends ConsumerWidget {
+class EntityCard extends StatelessWidget {
   final Entity entity;
+  final VoidCallback? onTap;
 
   const EntityCard({
     super.key,
     required this.entity,
+    this.onTap,
   });
 
-  Color _getColorForType(EntityType type) {
-    switch (type) {
-      case EntityType.task:
-        return Colors.blue;
-      case EntityType.note:
-        return Colors.green;
-      case EntityType.person:
-        return Colors.purple;
-      case EntityType.topic:
-        return Colors.orange;
-    }
-  }
-
-  String _getPreviewText(Entity entity) {
+  String _getEntityTypeText() {
     switch (entity.type) {
       case EntityType.task:
-        final dueDate = entity.data['due_date'];
-        final status = entity.data['status'] ?? 'New';
-        return [
-          'Status: $status',
-          if (dueDate != null) 'Due: $dueDate',
-          _getRelatedEntitiesText(entity),
-        ].where((text) => text.isNotEmpty).join('\n');
-
-      case EntityType.note:
-        return [
-          entity.data['content']?.toString() ?? '',
-          _getRelatedEntitiesText(entity),
-        ].where((text) => text.isNotEmpty).join('\n');
-
-      case EntityType.person:
-        return [
-          if (entity.data['role'] != null) 'Role: ${entity.data['role']}',
-          if (entity.data['email'] != null) 'Email: ${entity.data['email']}',
-          _getRelatedEntitiesText(entity),
-        ].where((text) => text.isNotEmpty).join('\n');
-
+        return 'TASK';
       case EntityType.topic:
-        return [
-          entity.data['description']?.toString() ?? '',
-          _getRelatedEntitiesText(entity),
-        ].where((text) => text.isNotEmpty).join('\n');
+        return 'TOPIC';
+      case EntityType.note:
+        return 'NOTE';
+      case EntityType.person:
+        return 'PERSON';
+      default:
+        return '';
     }
   }
 
-  String _getRelatedEntitiesText(Entity entity) {
-    final relatedEntities = <String>[];
-
-    if (entity.data['related_people']?.isNotEmpty == true) {
-      relatedEntities.add('${entity.data['related_people'].length} people');
+  String _getRelativeDate() {
+    // TODO: Implement proper relative date logic
+    final data = entity.data;
+    if (entity.type == EntityType.task && data['due_date'] != null) {
+      return 'due in a day';
+    } else if (data['created_at'] != null) {
+      return 'added recently';
     }
-    if (entity.data['related_tasks']?.isNotEmpty == true) {
-      relatedEntities.add('${entity.data['related_tasks'].length} tasks');
-    }
-    if (entity.data['related_topics']?.isNotEmpty == true) {
-      relatedEntities.add('${entity.data['related_topics'].length} topics');
-    }
-
-    return relatedEntities.isEmpty
-        ? ''
-        : 'Related: ${relatedEntities.join(', ')}';
+    return '';
   }
 
-  List<String> _getTags(Entity entity) {
-    final tags = <String>[];
+  List<String> _getStatusFields() {
+    final data = entity.data;
+    final List<String> fields = [];
 
     switch (entity.type) {
       case EntityType.task:
-        if (entity.data['status'] != null) {
-          tags.add(entity.data['status']);
+        if (data['priority'] != null) {
+          fields.add(data['priority'].toString().toUpperCase());
         }
-        if (entity.data['priority'] != null) {
-          tags.add(entity.data['priority']);
-        }
-        break;
-
-      case EntityType.note:
-        if (entity.data['categories'] is List) {
-          tags.addAll(
-              (entity.data['categories'] as List).map((e) => e.toString()));
+        if (data['status'] != null) {
+          fields.add(data['status'].toString().toUpperCase());
         }
         break;
-
       case EntityType.person:
-        if (entity.data['role'] != null) {
-          tags.add(entity.data['role']);
+        if (data['relationship'] != null) {
+          fields.add(data['relationship'].toString().toUpperCase());
         }
-        if (entity.data['team'] != null) {
-          tags.add(entity.data['team']);
+        if (data['status'] != null) {
+          fields.add(data['status'].toString().toUpperCase());
         }
         break;
-
-      case EntityType.topic:
-        if (entity.data['keywords'] is List) {
-          tags.addAll(
-              (entity.data['keywords'] as List).map((e) => e.toString()));
-        }
+      default:
         break;
     }
 
-    return tags;
+    return fields;
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final tags = _getTags(entity);
+  Widget build(BuildContext context) {
+    final statusFields = _getStatusFields();
+    final relativeDate = _getRelativeDate();
 
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: InkWell(
-        onTap: () => showDialog(
-          context: context,
-          builder: (context) => EntityDetailView(
-            entity: entity,
-            onClose: () => Navigator.of(context).pop(),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 332,
+        height: 140,
+        decoration: ShapeDecoration(
+          color: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            side: const BorderSide(width: 1, color: Colors.white),
+            borderRadius: BorderRadius.circular(20),
           ),
         ),
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          width: 300, // Increased width for better content display
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    _getIconForType(entity.type),
-                    color: _getColorForType(entity.type),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    entity.type.name.toUpperCase(),
-                    style: TextStyle(
-                      color: _getColorForType(entity.type),
-                      fontWeight: FontWeight.bold,
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Entity Type and Arrow
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      _getEntityIcon(),
+                      color: Colors.white,
+                      size: 18,
                     ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    'Created: ${_formatDate(entity.timestamp)}',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.grey,
-                        ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text(
-                entity.title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                _getPreviewText(entity),
-                style: Theme.of(context).textTheme.bodySmall,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-              ),
-              if (tags.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                SizedBox(
-                  height: 24,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: tags.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 4),
-                    itemBuilder: (context, index) => Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: _getColorForType(entity.type).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        tags[index],
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: _getColorForType(entity.type),
-                        ),
+                    const SizedBox(width: 8),
+                    Text(
+                      _getEntityTypeText(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontFamily: 'Graphik',
+                        fontWeight: FontWeight.w400,
+                        height: 1,
                       ),
                     ),
+                  ],
+                ),
+                Transform.rotate(
+                  angle: -0.79,
+                  child: const Icon(
+                    Icons.arrow_forward,
+                    color: Colors.white,
+                    size: 24,
                   ),
                 ),
               ],
-            ],
-          ),
+            ),
+
+            const Spacer(),
+
+            // Content
+            Text(
+              entity.data['content'] ?? entity.title,
+              style: const TextStyle(
+                color: Color(0xFF14AE5C),
+                fontSize: 18,
+                fontFamily: 'Blacker Display',
+                fontWeight: FontWeight.w400,
+                height: 1,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+
+            const Spacer(),
+
+            // Bottom Row
+            if (relativeDate.isNotEmpty || statusFields.isNotEmpty)
+              Row(
+                children: [
+                  if (relativeDate.isNotEmpty)
+                    Text(
+                      relativeDate,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.74),
+                        fontSize: 14,
+                        fontFamily: 'Graphik',
+                        fontWeight: FontWeight.w400,
+                        height: 1,
+                      ),
+                    ),
+                  const Spacer(),
+                  ...statusFields.map((field) => Padding(
+                        padding: const EdgeInsets.only(left: 8),
+                        child: Text(
+                          field,
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.74),
+                            fontSize: 14,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w400,
+                            height: 1,
+                          ),
+                        ),
+                      )),
+                ],
+              ),
+          ],
         ),
       ),
     );
   }
 
-  IconData _getIconForType(EntityType type) {
-    switch (type) {
+  IconData _getEntityIcon() {
+    switch (entity.type) {
       case EntityType.task:
-        return Icons.task_alt;
+        return Icons.check_circle_outline;
+      case EntityType.topic:
+        return Icons.topic;
       case EntityType.note:
         return Icons.note;
       case EntityType.person:
-        return Icons.person;
-      case EntityType.topic:
-        return Icons.topic;
+        return Icons.person_outline;
+      default:
+        return Icons.error_outline;
     }
-  }
-
-  IconData _getQuickActionIcon(EntityType type) {
-    switch (type) {
-      case EntityType.task:
-        return Icons.check_circle_outline;
-      case EntityType.note:
-        return Icons.edit;
-      case EntityType.person:
-        return Icons.person_add;
-      case EntityType.topic:
-        return Icons.add_task;
-    }
-  }
-
-  String _getQuickActionTooltip(EntityType type) {
-    switch (type) {
-      case EntityType.task:
-        return 'Mark Complete';
-      case EntityType.note:
-        return 'Edit Note';
-      case EntityType.person:
-        return 'Add to Team';
-      case EntityType.topic:
-        return 'Create Task';
-    }
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.month}/${date.day}/${date.year}';
   }
 }
