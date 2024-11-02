@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 import '../widgets/search_input.dart';
 import '../widgets/message_list.dart';
 import '../widgets/entity/entity_detail_view.dart';
@@ -50,6 +51,21 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
   }
 
+  void _copySecretToClipboard() async {
+    if (_userSecret != null) {
+      await Clipboard.setData(ClipboardData(text: _userSecret!));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Secret copied to clipboard'),
+            duration: Duration(seconds: 2),
+            backgroundColor: AppColors.green,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final chatState = ref.watch(chatProvider);
@@ -82,11 +98,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             Column(
               children: [
                 const SizedBox(height: 48),
-                // Logo Section
+                // Logo Section with tap handler
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 32),
                   child: hasMessages
-                      ? const MiniAppLogo()
+                      ? MiniAppLogo(onTap: _copySecretToClipboard)
                       : AppLogo(
                           isExpanded: !_isKeyboardVisible,
                         ),

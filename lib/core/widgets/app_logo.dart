@@ -12,53 +12,58 @@ class MiniAppLogo extends StatelessWidget {
   final bool animate;
   final Animation<double>? sizeAnimation;
   final Animation<Offset>? slideAnimation;
+  final VoidCallback? onTap;
 
   const MiniAppLogo({
     super.key,
     this.animate = false,
     this.sizeAnimation,
     this.slideAnimation,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final logo = Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SvgPicture.string(
-          logoSvg,
-          width: 32,
-          height: 32,
-        ),
-        const SizedBox(width: 12),
-        const Text.rich(
-          TextSpan(
-            children: [
-              TextSpan(
-                text: 'SIDE',
-                style: TextStyle(
-                  fontFamily: 'Blacker Display',
-                  fontSize: 24,
-                  fontWeight: FontWeight.w300,
-                  fontStyle: FontStyle.italic,
-                  color: AppColors.textSecondary,
-                  height: 1,
-                ),
-              ),
-              TextSpan(
-                text: 'KICK',
-                style: TextStyle(
-                  fontFamily: 'Blacker Display',
-                  fontSize: 24,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.textPrimary,
-                  height: 1,
-                ),
-              ),
-            ],
+    final logo = GestureDetector(
+      onTap: onTap,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SvgPicture.string(
+            logoSvg,
+            width: 32,
+            height: 32,
           ),
-        ),
-      ],
+          const SizedBox(width: 12),
+          const Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(
+                  text: 'SIDE',
+                  style: TextStyle(
+                    fontFamily: 'Blacker Display',
+                    fontSize: 24,
+                    fontWeight: FontWeight.w300,
+                    fontStyle: FontStyle.italic,
+                    color: AppColors.textSecondary,
+                    height: 1,
+                  ),
+                ),
+                TextSpan(
+                  text: 'KICK',
+                  style: TextStyle(
+                    fontFamily: 'Blacker Display',
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.textPrimary,
+                    height: 1,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
 
     if (!animate) return logo;
