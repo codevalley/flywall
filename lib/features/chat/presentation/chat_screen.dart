@@ -20,6 +20,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final scrollController = ScrollController();
   String? _userName;
   String? _userSecret;
+  bool _isKeyboardVisible = false;
 
   @override
   void initState() {
@@ -70,6 +71,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       }
     });
 
+    // Listen to keyboard visibility
+    _isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
+
     return Scaffold(
       backgroundColor: AppColors.black,
       body: SafeArea(
@@ -78,10 +82,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             Column(
               children: [
                 const SizedBox(height: 48),
-                // Logo Section
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 32),
-                  child: AppLogo(),
+                // Logo Section with animation
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: AppLogo(
+                    isExpanded: !_isKeyboardVisible,
+                  ),
                 ),
 
                 if (!hasMessages) ...[

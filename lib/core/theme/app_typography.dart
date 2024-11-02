@@ -47,10 +47,10 @@ class AppTypography {
 
   static TextStyle get subtitle => const TextStyle(
         fontFamily: blackerDisplay,
-        fontSize: 21,
+        fontSize: 28,
         fontWeight: FontWeight.w400,
         color: AppColors.textPrimary,
-        height: 1.2,
+        height: 1.3,
       );
 
   static TextStyle get body => const TextStyle(

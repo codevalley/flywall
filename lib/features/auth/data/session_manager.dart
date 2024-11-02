@@ -71,7 +71,7 @@ class SessionManager {
       return login(secret);
     } catch (e) {
       debugPrint('Restore with secret error: $e');
-      throw AuthException('Invalid secret or session expired');
+      throw const AuthException('Invalid secret or session expired');
     }
   }
 
