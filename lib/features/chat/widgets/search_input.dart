@@ -40,10 +40,12 @@ class _SearchInputState extends State<SearchInput> {
     });
   }
 
-  void _handleSubmit(String value) {
-    if (value.trim().isNotEmpty && widget.enabled) {
-      widget.onSubmitted(value);
+  void _handleSubmit() {
+    final text = _controller.text.trim();
+    if (text.isNotEmpty && widget.enabled) {
+      widget.onSubmitted(text);
       _controller.clear();
+      _updateHasText();
     }
   }
 
@@ -52,7 +54,6 @@ class _SearchInputState extends State<SearchInput> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Divider with padding
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Container(
@@ -60,7 +61,6 @@ class _SearchInputState extends State<SearchInput> {
             color: AppColors.white,
           ),
         ),
-        // Input row with no extra container
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Row(
@@ -87,18 +87,21 @@ class _SearchInputState extends State<SearchInput> {
                     filled: false,
                     contentPadding: const EdgeInsets.symmetric(vertical: 18),
                   ),
-                  onSubmitted: _handleSubmit,
+                  onSubmitted: (_) => _handleSubmit(),
                   maxLines: null,
                 ),
               ),
-              Transform.rotate(
-                angle: -45 * 3.14 / 180,
-                child: Icon(
-                  Icons.arrow_forward,
-                  color: _hasText && widget.enabled
-                      ? AppColors.white
-                      : AppColors.textDisabled,
-                  size: 20,
+              GestureDetector(
+                onTap: _hasText && widget.enabled ? _handleSubmit : null,
+                child: Transform.rotate(
+                  angle: -45 * 3.14 / 180,
+                  child: Icon(
+                    Icons.arrow_forward,
+                    color: _hasText && widget.enabled
+                        ? AppColors.white
+                        : AppColors.textDisabled,
+                    size: 20,
+                  ),
                 ),
               ),
             ],

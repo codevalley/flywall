@@ -20,7 +20,8 @@ class ChatMessage {
   final DateTime timestamp;
   final String? threadId;
   final bool isError;
-  final List<Entity> entities; // Added field for entities
+  final List<Entity> entities;
+  final Map<String, int>? tokenUsage;
 
   ChatMessage({
     required this.content,
@@ -29,7 +30,8 @@ class ChatMessage {
     DateTime? timestamp,
     this.threadId,
     this.isError = false,
-    this.entities = const [], // Default to empty list
+    this.entities = const [],
+    this.tokenUsage,
   }) : timestamp = timestamp ?? DateTime.now();
 }
 

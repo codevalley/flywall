@@ -165,9 +165,12 @@ class _AppLogoState extends State<AppLogo> with SingleTickerProviderStateMixin {
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-        return Container(
+        // Calculate height based on animation state
+        final height = _controller.value > 0 ? 40.0 : 200.0;
+
+        return SizedBox(
           width: MediaQuery.of(context).size.width,
-          height: 200,
+          height: height,
           child: Stack(
             alignment: Alignment.topCenter,
             clipBehavior: Clip.none,
@@ -232,7 +235,7 @@ class _AppLogoState extends State<AppLogo> with SingleTickerProviderStateMixin {
                 child: SlideTransition(
                   position: Tween<Offset>(
                     begin: Offset.zero,
-                    end: const Offset(0, -1.5), // Increased upward movement
+                    end: const Offset(0, -1.5),
                   ).animate(CurvedAnimation(
                     parent: _controller,
                     curve: const Interval(0.0, 0.3, curve: Curves.easeOut),

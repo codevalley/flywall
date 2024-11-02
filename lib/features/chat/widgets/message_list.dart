@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../presentation/providers/chat_provider.dart';
 import 'entity/entity_card.dart';
 import '../domain/models/entity.dart';
+import '../../../core/theme/theme.dart';
 
 class MessageList extends StatelessWidget {
   final List<ChatMessage> messages;
@@ -17,15 +18,14 @@ class MessageList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Reverse the messages list to show newest at the bottom
     final reversedMessages = messages.reversed.toList();
 
     return ListView.builder(
       controller: scrollController,
-      reverse: true, // This makes the list build from bottom to top
+      reverse: true,
       padding: const EdgeInsets.only(
-        left: 8,
-        right: 8,
+        left: 24,
+        right: 24,
         top: 20,
         bottom: 8,
       ),
@@ -37,11 +37,17 @@ class MessageList extends StatelessWidget {
 
         final message = reversedMessages[index - (isThreadComplete ? 1 : 0)];
         return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4.0),
+          padding: const EdgeInsets.symmetric(vertical: 12.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            crossAxisAlignment: message.isUserMessage
+                ? CrossAxisAlignment.start
+                : CrossAxisAlignment.end,
             children: [
               _buildMessageBubble(context, message),
+              if (!message.isUserMessage) ...[
+                const SizedBox(height: 4),
+                _buildTokenUsage(message.tokenUsage),
+              ],
               if (!message.isUserMessage && message.entities.isNotEmpty)
                 _buildEntityCards(message.entities),
             ],
@@ -53,74 +59,66 @@ class MessageList extends StatelessWidget {
 
   Widget _buildThreadCompleteMessage() {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-        decoration: BoxDecoration(
-          color: Colors.blue.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: Colors.blue.withOpacity(0.2),
+      padding: const EdgeInsets.only(bottom: 24.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 33,
+            height: 1,
+            color: const Color(0xFF009951),
           ),
-        ),
-        child: Column(
-          children: [
-            Text(
-              'Thread complete',
-              style: TextStyle(
-                color: Colors.blue[700],
-                fontWeight: FontWeight.bold,
-              ),
+          const SizedBox(width: 8),
+          Text(
+            'end of thread',
+            style: AppTypography.body.copyWith(
+              color: const Color(0xFF009951),
+              fontSize: 14,
+              fontFamily: 'Blacker Display',
+              fontWeight: FontWeight.w400,
+              height: 1,
             ),
-            const SizedBox(height: 4),
-            Text(
-              'Ask a question to start a new thread',
-              style: TextStyle(
-                color: Colors.blue[600],
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            width: 33,
+            height: 1,
+            color: const Color(0xFF009951),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildMessageBubble(BuildContext context, ChatMessage message) {
-    return Align(
-      alignment:
-          message.isUserMessage ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width * 0.75,
+    return Container(
+      constraints: BoxConstraints(
+        maxWidth: MediaQuery.of(context).size.width * 0.75,
+      ),
+      child: Text(
+        message.content,
+        style: AppTypography.welcomeText.copyWith(
+          color: message.isUserMessage ? Colors.white : const Color(0xFFE5A000),
         ),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: message.isUserMessage ? Colors.blue[100] : Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Text(
-          message.content,
-          style: TextStyle(
-            color: message.isUserMessage ? Colors.black87 : Colors.black,
-          ),
-        ),
+      ),
+    );
+  }
+
+  Widget _buildTokenUsage(Map<String, int>? tokenUsage) {
+    return Text(
+      'token usage ${tokenUsage?['prompt_tokens'] ?? 0} + ${tokenUsage?['completion_tokens'] ?? 0}',
+      style: AppTypography.caption.copyWith(
+        color: Colors.white,
+        fontSize: 16,
       ),
     );
   }
 
   Widget _buildEntityCards(List<Entity> entities) {
     return Padding(
-      padding: const EdgeInsets.only(top: 8, left: 8, right: 8),
+      padding: const EdgeInsets.only(top: 12),
       child: SizedBox(
-        height: 200, // Fixed height for the cards
+        height: 140,
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           itemCount: entities.length,
