@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/theme.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import '../../../core/widgets/app_logo.dart';
 
 class SearchInput extends StatefulWidget {
   final Function(String) onSubmitted;
@@ -17,20 +19,27 @@ class SearchInput extends StatefulWidget {
   State<SearchInput> createState() => _SearchInputState();
 }
 
-class _SearchInputState extends State<SearchInput> {
+class _SearchInputState extends State<SearchInput>
+    with SingleTickerProviderStateMixin {
   final TextEditingController _controller = TextEditingController();
   bool _hasText = false;
+  late final AnimationController _spinController;
 
   @override
   void initState() {
     super.initState();
     _controller.addListener(_updateHasText);
+    _spinController = AnimationController(
+      duration: const Duration(milliseconds: 2000),
+      vsync: this,
+    )..repeat();
   }
 
   @override
   void dispose() {
     _controller.removeListener(_updateHasText);
     _controller.dispose();
+    _spinController.dispose();
     super.dispose();
   }
 
@@ -47,6 +56,23 @@ class _SearchInputState extends State<SearchInput> {
       _controller.clear();
       _updateHasText();
     }
+  }
+
+  Widget _buildSpinningLogo() {
+    return AnimatedBuilder(
+      animation: _spinController,
+      builder: (context, child) {
+        return Transform.rotate(
+          angle: _spinController.value * 4 * 3.14159,
+          child: SvgPicture.string(
+            logoSvg,
+            width: 20,
+            height: 20,
+            color: AppColors.white,
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -91,19 +117,21 @@ class _SearchInputState extends State<SearchInput> {
                   maxLines: null,
                 ),
               ),
-              GestureDetector(
-                onTap: _hasText && widget.enabled ? _handleSubmit : null,
-                child: Transform.rotate(
-                  angle: -45 * 3.14 / 180,
-                  child: Icon(
-                    Icons.arrow_forward,
-                    color: _hasText && widget.enabled
-                        ? AppColors.white
-                        : AppColors.textDisabled,
-                    size: 20,
+              if (!widget.enabled)
+                _buildSpinningLogo()
+              else
+                GestureDetector(
+                  onTap: _hasText ? _handleSubmit : null,
+                  child: Transform.rotate(
+                    angle: -45 * 3.14 / 180,
+                    child: Icon(
+                      Icons.arrow_forward,
+                      color:
+                          _hasText ? AppColors.white : AppColors.textDisabled,
+                      size: 20,
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
         ),

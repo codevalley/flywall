@@ -21,7 +21,7 @@ class ChatMessage {
   final String? threadId;
   final bool isError;
   final List<Entity> entities;
-  final Map<String, int>? tokenUsage;
+  final Map<String, dynamic>? tokenUsage;
 
   ChatMessage({
     required this.content,
@@ -73,7 +73,6 @@ class ChatNotifier extends StateNotifier<ChatState> {
   ChatNotifier(this._chatService) : super(const ChatState());
 
   Future<void> sendMessage(String message) async {
-    // Add user message immediately
     state = state.copyWith(
       messages: [
         ...state.messages,
@@ -97,7 +96,8 @@ class ChatNotifier extends StateNotifier<ChatState> {
             isUserMessage: false,
             threadId: response.threadId,
             isThreadComplete: response.isThreadComplete,
-            entities: response.entities, // Include entities from response
+            entities: response.entities,
+            tokenUsage: response.tokenUsage,
           ),
         ],
         currentThreadId: response.threadId,
@@ -130,7 +130,6 @@ class ChatNotifier extends StateNotifier<ChatState> {
       state = state.copyWith(isLoading: true, error: null);
       final messages = await _chatService.getThread(threadId);
 
-      // Convert Message objects to ChatMessage objects
       final chatMessages = messages
           .map((msg) => ChatMessage(
                 content: msg.content,
@@ -138,6 +137,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
                 threadId: msg.threadId,
                 timestamp: msg.timestamp,
                 isThreadComplete: msg.isThreadComplete,
+                tokenUsage: msg.tokenUsage,
               ))
           .toList();
 

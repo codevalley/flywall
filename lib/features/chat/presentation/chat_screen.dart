@@ -82,12 +82,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             Column(
               children: [
                 const SizedBox(height: 48),
-                // Logo Section with animation
+                // Logo Section
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 32),
-                  child: AppLogo(
-                    isExpanded: !_isKeyboardVisible,
-                  ),
+                  child: hasMessages
+                      ? const MiniAppLogo()
+                      : AppLogo(
+                          isExpanded: !_isKeyboardVisible,
+                        ),
                 ),
 
                 if (!hasMessages) ...[
@@ -128,19 +130,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 ),
               ],
             ),
-
-            // Loading Indicator
-            if (chatState.isLoading)
-              const Positioned(
-                bottom: 90,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation(AppColors.yellow),
-                  ),
-                ),
-              ),
 
             // Entity Detail View
             if (selectedEntity != null)

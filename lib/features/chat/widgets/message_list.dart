@@ -104,12 +104,14 @@ class MessageList extends StatelessWidget {
     );
   }
 
-  Widget _buildTokenUsage(Map<String, int>? tokenUsage) {
+  Widget _buildTokenUsage(Map<String, dynamic>? tokenUsage) {
+    if (tokenUsage == null) return const SizedBox.shrink();
+
     return Text(
-      'token usage ${tokenUsage?['prompt_tokens'] ?? 0} + ${tokenUsage?['completion_tokens'] ?? 0}',
+      'token usage ${tokenUsage['prompt_tokens'] ?? 0} + ${tokenUsage['completion_tokens'] ?? 0}',
       style: AppTypography.caption.copyWith(
-        color: Colors.white,
-        fontSize: 16,
+        color: const Color(0xFFE5A000),
+        fontSize: 12,
       ),
     );
   }
