@@ -119,18 +119,20 @@ class MessageList extends StatelessWidget {
   Widget _buildEntityCards(List<EntityBase> entities) {
     return Padding(
       padding: const EdgeInsets.only(top: 12),
-      child: SizedBox(
-        height: 140,
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          itemCount: entities.length,
-          separatorBuilder: (context, index) => const SizedBox(width: 12),
-          itemBuilder: (context, index) => EntityCardFactory.createCard(
-            entities[index],
-            onTap: () {
-              // Your existing onTap logic here if any
-            },
-          ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: entities.map((entity) {
+            return Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: EntityCardFactory.createCard(
+                entity,
+                onTap: () {
+                  // Your existing onTap logic here if any
+                },
+              ),
+            );
+          }).toList(),
         ),
       ),
     );
