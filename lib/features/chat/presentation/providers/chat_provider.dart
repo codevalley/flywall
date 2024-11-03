@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/chat_service.dart';
 import '../../domain/models/message.dart';
 import '../../../../core/providers/core_providers.dart';
-import '../../domain/models/entity.dart';
+import '../../domain/models/entity_base.dart';
+import '../../domain/models/entity_factory.dart';
+
 // Export ChatState for use in other files
 export '../../domain/models/message.dart';
 
@@ -20,7 +22,7 @@ class ChatMessage {
   final DateTime timestamp;
   final String? threadId;
   final bool isError;
-  final List<Entity> entities;
+  final List<EntityBase> entities;
   final Map<String, dynamic>? tokenUsage;
 
   ChatMessage({
@@ -33,6 +35,42 @@ class ChatMessage {
     this.entities = const [],
     this.tokenUsage,
   }) : timestamp = timestamp ?? DateTime.now();
+
+  ChatMessage copyWith({
+    String? content,
+    bool? isUserMessage,
+    bool? isThreadComplete,
+    DateTime? timestamp,
+    String? threadId,
+    bool? isError,
+    List<EntityBase>? entities,
+    Map<String, dynamic>? tokenUsage,
+  }) {
+    return ChatMessage(
+      content: content ?? this.content,
+      isUserMessage: isUserMessage ?? this.isUserMessage,
+      isThreadComplete: isThreadComplete ?? this.isThreadComplete,
+      timestamp: timestamp ?? this.timestamp,
+      threadId: threadId ?? this.threadId,
+      isError: isError ?? this.isError,
+      entities: entities ?? this.entities,
+      tokenUsage: tokenUsage ?? this.tokenUsage,
+    );
+  }
+
+  factory ChatMessage.fromMessage(Message message) {
+    return ChatMessage(
+      content: message.content,
+      isUserMessage: false,
+      threadId: message.threadId,
+      isThreadComplete: message.isThreadComplete,
+      entities: message.entities
+          .map((e) => EntityFactory.fromJson(e.toJson()))
+          .toList(),
+      tokenUsage: message.tokenUsage,
+      timestamp: message.timestamp,
+    );
+  }
 }
 
 class ChatState {
@@ -91,14 +129,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
       state = state.copyWith(
         messages: [
           ...state.messages,
-          ChatMessage(
-            content: response.content,
-            isUserMessage: false,
-            threadId: response.threadId,
-            isThreadComplete: response.isThreadComplete,
-            entities: response.entities,
-            tokenUsage: response.tokenUsage,
-          ),
+          ChatMessage.fromMessage(response),
         ],
         currentThreadId: response.threadId,
         isLoading: false,
@@ -130,16 +161,8 @@ class ChatNotifier extends StateNotifier<ChatState> {
       state = state.copyWith(isLoading: true, error: null);
       final messages = await _chatService.getThread(threadId);
 
-      final chatMessages = messages
-          .map((msg) => ChatMessage(
-                content: msg.content,
-                isUserMessage: msg.type == MessageType.text,
-                threadId: msg.threadId,
-                timestamp: msg.timestamp,
-                isThreadComplete: msg.isThreadComplete,
-                tokenUsage: msg.tokenUsage,
-              ))
-          .toList();
+      final chatMessages =
+          messages.map((msg) => ChatMessage.fromMessage(msg)).toList();
 
       state = state.copyWith(
         messages: chatMessages,

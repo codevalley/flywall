@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../presentation/providers/chat_provider.dart';
-import 'entity/entity_card.dart';
-import '../domain/models/entity.dart';
+import 'entity/entity_card_factory.dart';
+import '../domain/models/entity_base.dart';
 import '../../../core/theme/theme.dart';
 
 class MessageList extends StatelessWidget {
@@ -116,7 +116,7 @@ class MessageList extends StatelessWidget {
     );
   }
 
-  Widget _buildEntityCards(List<Entity> entities) {
+  Widget _buildEntityCards(List<EntityBase> entities) {
     return Padding(
       padding: const EdgeInsets.only(top: 12),
       child: SizedBox(
@@ -125,7 +125,12 @@ class MessageList extends StatelessWidget {
           scrollDirection: Axis.horizontal,
           itemCount: entities.length,
           separatorBuilder: (context, index) => const SizedBox(width: 12),
-          itemBuilder: (context, index) => EntityCard(entity: entities[index]),
+          itemBuilder: (context, index) => EntityCardFactory.createCard(
+            entities[index],
+            onTap: () {
+              // Your existing onTap logic here if any
+            },
+          ),
         ),
       ),
     );
