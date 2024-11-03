@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../domain/models/entity_base.dart';
-import '../../../../core/theme/theme.dart';
 
 abstract class BaseEntityCard extends StatelessWidget {
   final VoidCallback? onTap;

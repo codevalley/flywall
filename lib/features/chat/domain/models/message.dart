@@ -1,6 +1,5 @@
-// lib/features/chat/domain/models/message.dart
-
-import 'entity.dart';
+import 'entity_base.dart';
+import 'entity_factory.dart';
 
 enum MessageType { text, entity, system }
 
@@ -8,7 +7,7 @@ class Message {
   final String id;
   final String content;
   final MessageType type;
-  final List<Entity> entities;
+  final List<EntityBase> entities; // Changed from Entity to EntityBase
   final DateTime timestamp;
   final Map<String, dynamic>? tokenUsage;
   final String? threadId;
@@ -31,117 +30,53 @@ class Message {
 
   factory Message.fromJson(Map<String, dynamic> json) {
     try {
-      // Generate a unique message ID if none provided
       final id = json['id']?.toString() ??
           DateTime.now().microsecondsSinceEpoch.toString();
 
-      // Use 'response' field as content, falling back to 'content' if not present
       final content =
           json['response']?.toString() ?? json['content']?.toString() ?? '';
 
-      // Parse entities from the new structure
-      final entities = <Entity>[];
+      // Parse entities using the new EntityFactory
+      final entities = <EntityBase>[];
       if (json['entities'] is Map<String, dynamic>) {
         final entitiesMap = json['entities'] as Map<String, dynamic>;
 
-        // Process tasks
-        if (entitiesMap['tasks'] is List) {
-          for (final task in entitiesMap['tasks']) {
-            try {
-              if (task is Map<String, dynamic>) {
-                entities.add(Entity(
-                  id: task['task_id']?.toString() ??
-                      DateTime.now().microsecondsSinceEpoch.toString(),
-                  type: EntityType.task,
-                  title: task['title']?.toString() ?? 'Untitled Task',
-                  data: Map<String, dynamic>.from(task),
-                  timestamp:
-                      DateTime.tryParse(task['created_at']?.toString() ?? '') ??
-                          DateTime.now(),
-                ));
+        // Helper function to process each entity type
+        void processEntities(String key, EntityType type) {
+          if (entitiesMap[key] is List) {
+            for (final item in entitiesMap[key]) {
+              try {
+                if (item is Map<String, dynamic>) {
+                  // Prepare the entity data with proper ID field and type
+                  final entityData = Map<String, dynamic>.from(item);
+                  entityData['id'] = item['${type.name}_id']?.toString() ??
+                      DateTime.now().microsecondsSinceEpoch.toString();
+                  entityData['type'] = type.name;
+
+                  // Use EntityFactory to create the appropriate entity type
+                  entities.add(EntityFactory.fromJson(entityData));
+                }
+              } catch (e) {
+                print('Error parsing ${type.name}: $e');
               }
-            } catch (e) {
-              print('Error parsing task: $e');
             }
           }
         }
 
-        // Process notes
-        if (entitiesMap['notes'] is List) {
-          for (final note in entitiesMap['notes']) {
-            try {
-              if (note is Map<String, dynamic>) {
-                entities.add(Entity(
-                  id: note['note_id']?.toString() ??
-                      DateTime.now().microsecondsSinceEpoch.toString(),
-                  type: EntityType.note,
-                  title: note['content']?.toString() ?? 'Untitled Note',
-                  data: Map<String, dynamic>.from(note),
-                  timestamp:
-                      DateTime.tryParse(note['created_at']?.toString() ?? '') ??
-                          DateTime.now(),
-                ));
-              }
-            } catch (e) {
-              print('Error parsing note: $e');
-            }
-          }
-        }
-
-        // Process people
-        if (entitiesMap['people'] is List) {
-          for (final person in entitiesMap['people']) {
-            try {
-              if (person is Map<String, dynamic>) {
-                entities.add(Entity(
-                  id: person['person_id']?.toString() ??
-                      DateTime.now().microsecondsSinceEpoch.toString(),
-                  type: EntityType.person,
-                  title: person['name']?.toString() ??
-                      person['screen_name']?.toString() ??
-                      'Unnamed Person',
-                  data: Map<String, dynamic>.from(person),
-                  timestamp: DateTime.tryParse(
-                          person['created_at']?.toString() ?? '') ??
-                      DateTime.now(),
-                ));
-              }
-            } catch (e) {
-              print('Error parsing person: $e');
-            }
-          }
-        }
-
-        // Process topics
-        if (entitiesMap['topics'] is List) {
-          for (final topic in entitiesMap['topics']) {
-            try {
-              if (topic is Map<String, dynamic>) {
-                entities.add(Entity(
-                  id: topic['topic_id']?.toString() ??
-                      DateTime.now().microsecondsSinceEpoch.toString(),
-                  type: EntityType.topic,
-                  title: topic['name']?.toString() ?? 'Untitled Topic',
-                  data: Map<String, dynamic>.from(topic),
-                  timestamp: DateTime.tryParse(
-                          topic['created_at']?.toString() ?? '') ??
-                      DateTime.now(),
-                ));
-              }
-            } catch (e) {
-              print('Error parsing topic: $e');
-            }
-          }
-        }
+        // Process each entity type
+        processEntities('tasks', EntityType.task);
+        processEntities('notes', EntityType.note);
+        processEntities('people', EntityType.person);
+        processEntities('topics', EntityType.topic);
       }
 
-      // Parse token usage safely
+      // Parse token usage
       Map<String, dynamic>? tokenUsage;
       if (json['token_usage'] is Map) {
         tokenUsage = Map<String, dynamic>.from(json['token_usage'] as Map);
       }
 
-      // Parse updated entities safely
+      // Parse updated entities counts
       final updatedEntities = <String, int>{};
       if (json['updated_entities'] is Map) {
         final updateMap = json['updated_entities'] as Map;
@@ -175,7 +110,6 @@ class Message {
       print('Error parsing Message: $e');
       print('Stack trace: $stackTrace');
 
-      // Return a default error message if parsing fails
       return Message(
         id: DateTime.now().microsecondsSinceEpoch.toString(),
         content: 'Error parsing message: $e',
@@ -216,7 +150,7 @@ class Message {
     String? id,
     String? content,
     MessageType? type,
-    List<Entity>? entities,
+    List<EntityBase>? entities, // Changed from Entity to EntityBase
     DateTime? timestamp,
     Map<String, dynamic>? tokenUsage,
     String? threadId,
@@ -236,5 +170,12 @@ class Message {
       updatedEntities: updatedEntities ?? this.updatedEntities,
       newPrompt: newPrompt ?? this.newPrompt,
     );
+  }
+
+  @override
+  String toString() {
+    return 'Message{id: $id, content: $content, type: $type, '
+        'entities: ${entities.length}, timestamp: $timestamp, '
+        'threadId: $threadId, isThreadComplete: $isThreadComplete}';
   }
 }
