@@ -36,28 +36,16 @@ class TaskCard extends BaseEntityCard {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Task Type Label
-                  const Text(
+                  Text(
                     'TASK',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontFamily: 'Graphik',
-                      fontWeight: FontWeight.w500,
-                      height: 0,
-                    ),
+                    style: AppTypography.cardLabel,
                   ),
                   const SizedBox(height: 8),
 
                   // Task Description
                   Text(
                     task.description,
-                    style: const TextStyle(
-                      color: AppColors.green,
-                      fontSize: 18,
-                      fontFamily: 'Blacker Display',
-                      fontWeight: FontWeight.w400,
-                      height: 1.2,
-                    ),
+                    style: AppTypography.cardTitle,
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -69,26 +57,14 @@ class TaskCard extends BaseEntityCard {
                       if (task.priority.isNotEmpty)
                         Text(
                           task.priority.toUpperCase(),
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.74),
-                            fontSize: 16,
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.w400,
-                            height: 0,
-                          ),
+                          style: AppTypography.cardMetadata,
                         ),
                       if (task.priority.isNotEmpty && task.status.isNotEmpty)
                         const SizedBox(width: 42),
                       if (task.status.isNotEmpty)
                         Text(
                           task.status.toUpperCase(),
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.74),
-                            fontSize: 16,
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.w400,
-                            height: 0,
-                          ),
+                          style: AppTypography.cardMetadata,
                         ),
                     ],
                   ),
@@ -118,13 +94,7 @@ class TaskCard extends BaseEntityCard {
                       if (task.schedule.isNotEmpty)
                         Text(
                           _formatSchedule(task.schedule),
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.74),
-                            fontSize: 14,
-                            fontFamily: 'Graphik',
-                            fontWeight: FontWeight.w400,
-                            height: 0,
-                          ),
+                          style: AppTypography.cardDate,
                         ),
                       Transform.rotate(
                         angle: -0.79,

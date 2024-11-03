@@ -5,8 +5,9 @@ import 'app_colors.dart';
 class AppTypography {
   static const blackerDisplay = 'Blacker Display';
   static const graphik = 'Graphik';
+  static const merriweather = 'Merriweather';
 
-  // Core text styles (used by theme system)
+  // Display and Headings (Blacker Display)
   static TextStyle get megaTitle => const TextStyle(
         fontFamily: blackerDisplay,
         fontSize: 126,
@@ -21,12 +22,6 @@ class AppTypography {
         fontWeight: FontWeight.w900,
         color: AppColors.textPrimary,
         height: 1,
-      );
-
-  static TextStyle get logoItalic => logo.copyWith(
-        fontWeight: FontWeight.w300,
-        fontStyle: FontStyle.italic,
-        color: AppColors.textSecondary,
       );
 
   static TextStyle get heading1 => const TextStyle(
@@ -53,15 +48,49 @@ class AppTypography {
         height: 1.3,
       );
 
-  static TextStyle get body => const TextStyle(
+  // Card Styles
+  static TextStyle get cardTitle => const TextStyle(
+        fontFamily: merriweather,
+        fontSize: 18,
+        fontWeight: FontWeight.w400,
+        color: AppColors.green,
+        height: 1.2,
+      );
+
+  static TextStyle get cardLabel => const TextStyle(
         fontFamily: graphik,
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+        color: Colors.white,
+        height: 0,
+      );
+
+  static TextStyle get cardMetadata => TextStyle(
+        fontFamily: graphik,
+        fontSize: 16,
+        fontWeight: FontWeight.w400,
+        color: Colors.white.withOpacity(0.74),
+        height: 0,
+      );
+
+  static TextStyle get cardDate => TextStyle(
+        fontFamily: merriweather,
+        fontSize: 14,
+        fontWeight: FontWeight.w400,
+        color: Colors.white.withOpacity(0.74),
+        height: 0,
+      );
+
+  // Body Text
+  static TextStyle get body => const TextStyle(
+        fontFamily: merriweather,
         fontSize: 14,
         fontWeight: FontWeight.w400,
         color: AppColors.textPrimary,
         height: 1.5,
       );
 
-  static TextStyle get caption => const TextStyle(
+  static TextStyle get footnote => const TextStyle(
         fontFamily: graphik,
         fontSize: 12,
         fontWeight: FontWeight.w300,
@@ -69,7 +98,7 @@ class AppTypography {
         height: 1.4,
       );
 
-  // Input styles
+  // Input and Button Styles
   static TextStyle get input => const TextStyle(
         fontFamily: blackerDisplay,
         fontSize: 32,
@@ -79,14 +108,20 @@ class AppTypography {
       );
 
   static TextStyle get inputLabel => const TextStyle(
-        fontFamily: blackerDisplay,
+        fontFamily: merriweather,
         fontSize: 21,
         fontWeight: FontWeight.w700,
         color: AppColors.black,
         height: 1.2,
       );
 
-  // Button styles
+  static TextStyle get inputAction => const TextStyle(
+        fontFamily: merriweather,
+        fontSize: 18,
+        fontWeight: FontWeight.w500,
+        height: 1,
+      );
+
   static TextStyle get button => const TextStyle(
         fontFamily: graphik,
         fontSize: 22,
@@ -95,23 +130,18 @@ class AppTypography {
       );
 
   static TextStyle get buttonAction => const TextStyle(
-        fontFamily: blackerDisplay,
+        fontFamily: merriweather,
         fontSize: 22,
         fontWeight: FontWeight.w500,
         height: 1,
       );
 
-  static TextStyle get buttonSerif => button;
-
+  // Welcome Text
   static TextStyle get welcomeText => const TextStyle(
-        fontFamily: blackerDisplay,
-        fontSize: 21, // 2/3 of heading2's 32px
+        fontFamily: merriweather,
+        fontSize: 21,
         fontWeight: FontWeight.w700,
         color: AppColors.textPrimary,
         height: 1.3,
-      );
-
-  static TextStyle get inputAction => buttonAction.copyWith(
-        fontSize: 18, // 20% smaller than buttonAction's 22px
       );
 }

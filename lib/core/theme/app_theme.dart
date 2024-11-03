@@ -24,7 +24,7 @@ class AppTheme {
         titleLarge: AppTypography.subtitle,
         bodyLarge: AppTypography.body,
         bodyMedium: AppTypography.body,
-        labelSmall: AppTypography.caption,
+        labelSmall: AppTypography.footnote,
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,

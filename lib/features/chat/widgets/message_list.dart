@@ -109,7 +109,7 @@ class MessageList extends StatelessWidget {
 
     return Text(
       'token usage ${tokenUsage['prompt_tokens'] ?? 0} + ${tokenUsage['completion_tokens'] ?? 0}',
-      style: AppTypography.caption.copyWith(
+      style: AppTypography.footnote.copyWith(
         color: const Color(0xFFE5A000),
         fontSize: 12,
       ),

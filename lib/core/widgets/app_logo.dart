@@ -8,7 +8,7 @@ const logoSvg =
 <path d="M35.8 93.84L10.36 75.6L31 53.04L29.08 52.56L29.32 52.8L0.76001 47.28L10.36 17.28L38.44 30.24L36.52 14.16C36.2 11.44 35.88 8.96 35.56 6.72C35.4 4.32 35.16 2.08 34.84 0H66.52L62.92 30.24L77.8 23.28C80.36 22 82.68 20.88 84.76 19.92C87 18.8 89.08 17.84 91 17.04L100.6 47.04L70.6 53.04L91.48 75.36L65.32 93.36L50.68 67.2L47.8 72.72L35.8 93.84ZM34.6 87.84L44.2 70.8C45.32 68.72 46.36 66.8 47.32 65.04C48.44 63.12 49.64 61.12 50.92 59.04L66.76 87.36L85.24 74.64C81.56 70.96 77.8 66.96 73.96 62.64L62.68 50.4L95.08 43.92L88.6 22.8L58.12 36.96L61.72 4.08H39.64C40.12 9.2 40.68 14.72 41.32 20.64C42.12 26.4 42.92 32 43.72 37.44L13 22.8L6.28001 43.92C9.96001 44.72 13.88 45.52 18.04 46.32C22.36 47.12 26.28 47.84 29.8 48.48L38.92 50.16L16.6 74.88L34.6 87.84ZM33.88 84.72L19.72 74.4L43 48.96C40.28 48.48 37.48 48 34.6 47.52C31.88 46.88 29 46.24 25.96 45.6C22.92 44.96 19.96 44.4 17.08 43.92C14.36 43.28 11.64 42.8 8.92001 42.48L14.44 25.68L45.88 40.56L42.04 5.99999H59.56L55.48 40.32L86.92 25.68L92.44 42.48L58.36 48.96L82.12 74.16L67.72 84.24L50.92 54.48L42.52 69.6C39.48 74.56 36.6 79.6 33.88 84.72Z" fill="#14AE5C"/>
 </svg>''';
 
-class MiniAppLogo extends StatelessWidget {
+class MiniAppLogo extends StatefulWidget {
   final bool animate;
   final Animation<double>? sizeAnimation;
   final Animation<Offset>? slideAnimation;
@@ -23,16 +23,54 @@ class MiniAppLogo extends StatelessWidget {
   });
 
   @override
+  State<MiniAppLogo> createState() => _MiniAppLogoState();
+}
+
+class _MiniAppLogoState extends State<MiniAppLogo>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _spinController;
+
+  @override
+  void initState() {
+    super.initState();
+    _spinController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    );
+    // Initial spin
+    _spin();
+  }
+
+  @override
+  void dispose() {
+    _spinController.dispose();
+    super.dispose();
+  }
+
+  void _spin() {
+    _spinController.forward(from: 0);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final logo = GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        widget.onTap?.call();
+        _spin(); // Spin on tap too
+      },
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          SvgPicture.string(
-            logoSvg,
-            width: 32,
-            height: 32,
+          RotationTransition(
+            turns: CurvedAnimation(
+              parent: _spinController,
+              curve: Curves.easeOut,
+            ),
+            child: SvgPicture.string(
+              logoSvg,
+              width: 32,
+              height: 32,
+            ),
           ),
           const SizedBox(width: 12),
           const Text.rich(
@@ -66,12 +104,12 @@ class MiniAppLogo extends StatelessWidget {
       ),
     );
 
-    if (!animate) return logo;
+    if (!widget.animate) return logo;
 
     return SlideTransition(
-      position: slideAnimation!,
+      position: widget.slideAnimation!,
       child: ScaleTransition(
-        scale: sizeAnimation!,
+        scale: widget.sizeAnimation!,
         child: logo,
       ),
     );
@@ -92,8 +130,9 @@ class AppLogo extends StatefulWidget {
   State<AppLogo> createState() => _AppLogoState();
 }
 
-class _AppLogoState extends State<AppLogo> with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
+class _AppLogoState extends State<AppLogo> with TickerProviderStateMixin {
+  late final AnimationController _layoutController;
+  late final AnimationController _spinController;
   late final Animation<double> _scaleAnimation;
   late final Animation<Offset> _logoOffsetAnimation;
   late final Animation<Offset> _textOffsetAnimation;
@@ -102,49 +141,55 @@ class _AppLogoState extends State<AppLogo> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
+    _layoutController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
     );
 
+    _spinController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    );
+
+    // Initialize layout animations
     _scaleAnimation = Tween<double>(
       begin: 1.0,
       end: 32 / 80,
     ).animate(CurvedAnimation(
-      parent: _controller,
+      parent: _layoutController,
       curve: Curves.easeInOut,
     ));
 
-    // Logo movement (unchanged as it's working correctly)
     _logoOffsetAnimation = Tween<Offset>(
       begin: const Offset(0, 0),
       end: const Offset(-0.6, -0.8),
     ).animate(CurvedAnimation(
-      parent: _controller,
+      parent: _layoutController,
       curve: Curves.easeInOut,
     ));
 
-    // Adjusted text movement to reach the same height as logo
     _textOffsetAnimation = Tween<Offset>(
       begin: const Offset(0, 1.2),
-      end: const Offset(0.1, -2.88), // Increased upward movement
+      end: const Offset(0.1, -2.86),
     ).animate(CurvedAnimation(
-      parent: _controller,
+      parent: _layoutController,
       curve: Curves.easeInOut,
     ));
 
-    // Increased upward movement for subtitle
     _subtitleOpacityAnimation = Tween<double>(
       begin: 1.0,
       end: 0.0,
     ).animate(CurvedAnimation(
-      parent: _controller,
+      parent: _layoutController,
       curve: const Interval(0.0, 0.3, curve: Curves.easeOut),
     ));
 
     if (!widget.isExpanded) {
-      _controller.value = 1.0;
+      _layoutController.value = 1.0;
     }
+
+    // Initial spin
+    _spin();
   }
 
   @override
@@ -152,26 +197,30 @@ class _AppLogoState extends State<AppLogo> with SingleTickerProviderStateMixin {
     super.didUpdateWidget(oldWidget);
     if (widget.isExpanded != oldWidget.isExpanded) {
       if (widget.isExpanded) {
-        _controller.reverse();
+        _layoutController.reverse();
       } else {
-        _controller.forward();
+        _layoutController.forward();
       }
     }
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _layoutController.dispose();
+    _spinController.dispose();
     super.dispose();
+  }
+
+  void _spin() {
+    _spinController.forward(from: 0);
   }
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: _controller,
+      animation: _layoutController,
       builder: (context, child) {
-        // Calculate height based on animation state
-        final height = _controller.value > 0 ? 40.0 : 200.0;
+        final height = _layoutController.value > 0 ? 40.0 : 200.0;
 
         return SizedBox(
           width: MediaQuery.of(context).size.width,
@@ -180,17 +229,26 @@ class _AppLogoState extends State<AppLogo> with SingleTickerProviderStateMixin {
             alignment: Alignment.topCenter,
             clipBehavior: Clip.none,
             children: [
-              // Logo
+              // Logo with spin animation
               Positioned(
                 top: 0,
                 child: SlideTransition(
                   position: _logoOffsetAnimation,
                   child: ScaleTransition(
                     scale: _scaleAnimation,
-                    child: SvgPicture.string(
-                      logoSvg,
-                      width: 80,
-                      height: 80,
+                    child: GestureDetector(
+                      onTap: _spin,
+                      child: RotationTransition(
+                        turns: CurvedAnimation(
+                          parent: _spinController,
+                          curve: Curves.easeOut,
+                        ),
+                        child: SvgPicture.string(
+                          logoSvg,
+                          width: 80,
+                          height: 80,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -242,7 +300,7 @@ class _AppLogoState extends State<AppLogo> with SingleTickerProviderStateMixin {
                     begin: Offset.zero,
                     end: const Offset(0, -1.5),
                   ).animate(CurvedAnimation(
-                    parent: _controller,
+                    parent: _layoutController,
                     curve: const Interval(0.0, 0.3, curve: Curves.easeOut),
                   )),
                   child: FadeTransition(
