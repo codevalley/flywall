@@ -100,11 +100,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 // Logo Section with tap handler
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 32),
-                  child: hasMessages
+                  child: hasMessages || _isKeyboardVisible
                       ? MiniAppLogo(onTap: _copySecretToClipboard)
-                      : AppLogo(
-                          isExpanded: !_isKeyboardVisible,
-                        ),
+                      : const AppLogo(isExpanded: true), // App Logo
                 ),
 
                 if (!hasMessages) ...[
