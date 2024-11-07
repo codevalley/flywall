@@ -4,6 +4,75 @@ import 'entity/entity_card_factory.dart';
 import '../domain/models/entity_base.dart';
 import '../../../core/theme/theme.dart';
 
+class AnimatedScrollView extends StatefulWidget {
+  final Widget child;
+  final bool shouldAnimate;
+
+  const AnimatedScrollView({
+    super.key,
+    required this.child,
+    this.shouldAnimate = true,
+  });
+
+  @override
+  State<AnimatedScrollView> createState() => _AnimatedScrollViewState();
+}
+
+class _AnimatedScrollViewState extends State<AnimatedScrollView>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Offset> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 1200),
+      vsync: this,
+    );
+
+    _animation = TweenSequence<Offset>([
+      TweenSequenceItem(
+        tween: Tween(
+          begin: const Offset(0, 0),
+          end: const Offset(-0.05, 0),
+        ),
+        weight: 1,
+      ),
+      TweenSequenceItem(
+        tween: Tween(
+          begin: const Offset(-0.05, 0),
+          end: const Offset(0, 0),
+        ),
+        weight: 1,
+      ),
+    ]).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    ));
+
+    if (widget.shouldAnimate) {
+      Future.delayed(const Duration(milliseconds: 500), () {
+        _controller.forward().then((_) => _controller.reset());
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SlideTransition(
+      position: _animation,
+      child: widget.child,
+    );
+  }
+}
+
 class MessageList extends StatelessWidget {
   final List<ChatMessage> messages;
   final ScrollController scrollController;
@@ -117,23 +186,43 @@ class MessageList extends StatelessWidget {
   }
 
   Widget _buildEntityCards(List<EntityBase> entities) {
+    if (entities.isEmpty) return const SizedBox.shrink();
+
+    final showPeek = entities.length > 1;
+
     return Padding(
       padding: const EdgeInsets.only(top: 12),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: entities.map((entity) {
-            return Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: EntityCardFactory.createCard(
-                entity,
-                onTap: () {
-                  // Your existing onTap logic here if any
-                },
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return AnimatedScrollView(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: EdgeInsets.only(
+                left: 24,
+                right: showPeek ? 0 : 24,
               ),
-            );
-          }).toList(),
-        ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: entities.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final entity = entry.value;
+                  final isLast = index == entities.length - 1;
+                  final rightPadding = isLast ? 24.0 : 12.0;
+
+                  return Padding(
+                    padding: EdgeInsets.only(right: rightPadding),
+                    child: EntityCardFactory.createCard(
+                      entity,
+                      onTap: () {
+                        // Your existing onTap logic here if any
+                      },
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

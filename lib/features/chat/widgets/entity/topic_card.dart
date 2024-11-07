@@ -18,7 +18,10 @@ class TopicCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: 332,
-        constraints: const BoxConstraints(minHeight: 140),
+        constraints: const BoxConstraints(
+          minHeight: 140, // Minimum height for consistency
+          maxHeight: 400,
+        ),
         decoration: ShapeDecoration(
           color: Colors.transparent,
           shape: RoundedRectangleBorder(
@@ -95,7 +98,7 @@ class TopicCard extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
+                padding: const EdgeInsets.fromLTRB(24, 12, 24, 12),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
