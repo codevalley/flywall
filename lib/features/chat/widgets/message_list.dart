@@ -89,6 +89,16 @@ class MessageList extends StatelessWidget {
   Widget build(BuildContext context) {
     final reversedMessages = messages.reversed.toList();
 
+    // Scroll to bottom when new messages arrive
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (scrollController.hasClients) {
+        scrollController.animateTo(
+          scrollController.position.minScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
     return ListView.builder(
       controller: scrollController,
       reverse: true,
@@ -194,6 +204,13 @@ class MessageList extends StatelessWidget {
       padding: const EdgeInsets.only(top: 12),
       child: LayoutBuilder(
         builder: (context, constraints) {
+          // Calculate card width to ensure peek
+          final availableWidth = constraints.maxWidth;
+          final cardWidth =
+              availableWidth - 48.0; // Account for horizontal padding
+          final effectiveCardWidth =
+              showPeek ? cardWidth - 40 : cardWidth; // Show peek of next card
+
           return AnimatedScrollView(
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -211,11 +228,14 @@ class MessageList extends StatelessWidget {
 
                   return Padding(
                     padding: EdgeInsets.only(right: rightPadding),
-                    child: EntityCardFactory.createCard(
-                      entity,
-                      onTap: () {
-                        // Your existing onTap logic here if any
-                      },
+                    child: SizedBox(
+                      width: effectiveCardWidth,
+                      child: EntityCardFactory.createCard(
+                        entity,
+                        onTap: () {
+                          // Your existing onTap logic here if any
+                        },
+                      ),
                     ),
                   );
                 }).toList(),

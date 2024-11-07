@@ -17,7 +17,7 @@ class TopicCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 332,
+        width: double.infinity,
         constraints: const BoxConstraints(
           minHeight: 140, // Minimum height for consistency
           maxHeight: 400,
