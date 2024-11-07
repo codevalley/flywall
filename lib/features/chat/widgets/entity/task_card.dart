@@ -18,7 +18,7 @@ class TaskCard extends BaseEntityCard {
       onTap: onTap,
       child: Container(
         width: 332,
-        constraints: const BoxConstraints(minHeight: 180),
+        constraints: const BoxConstraints(minHeight: 140),
         decoration: ShapeDecoration(
           color: Colors.transparent,
           shape: RoundedRectangleBorder(
@@ -31,7 +31,7 @@ class TaskCard extends BaseEntityCard {
           children: [
             // Main Content Area
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -49,7 +49,7 @@ class TaskCard extends BaseEntityCard {
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
 
                   // Priority and Status
                   Row(
@@ -87,7 +87,7 @@ class TaskCard extends BaseEntityCard {
 
                 // Due Date and Arrow
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 12, 24, 12),
+                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [

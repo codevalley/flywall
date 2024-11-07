@@ -18,7 +18,7 @@ class PersonCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: 332,
-        constraints: const BoxConstraints(minHeight: 180),
+        constraints: const BoxConstraints(minHeight: 140),
         decoration: ShapeDecoration(
           color: Colors.transparent,
           shape: RoundedRectangleBorder(
@@ -31,7 +31,7 @@ class PersonCard extends StatelessWidget {
           children: [
             // Main Content Area
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -63,7 +63,7 @@ class PersonCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
 
                   // Person Name
                   Text(
@@ -73,7 +73,7 @@ class PersonCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   if (person.designation != null) ...[
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 4),
                     Text(
                       person.designation!,
                       style: AppTypography.cardMetadata,
@@ -95,7 +95,7 @@ class PersonCard extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(24, 12, 24, 12),
+                padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
