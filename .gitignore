@@ -103,7 +103,7 @@ ehthumbs_vista.db
 .project
 *.sublime-workspace
 *.sublime-project
-repopack-output.txt
+repomix-output.txt
 
 # Symbolication & Obfuscation related
 app.*.symbols
