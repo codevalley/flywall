@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import '../../domain/models/task_entity.dart';
 import '../../../../core/theme/theme.dart';
-import 'base_entity_card.dart';
 
-class TaskCard extends BaseEntityCard {
+class TaskCard extends StatelessWidget {
   final TaskEntity task;
+  final VoidCallback? onTap;
 
   const TaskCard({
     super.key,
     required this.task,
-    super.onTap,
+    this.onTap,
   });
 
   @override
@@ -19,8 +19,7 @@ class TaskCard extends BaseEntityCard {
       child: Container(
         width: double.infinity,
         constraints: const BoxConstraints(
-          minHeight: 140, // Minimum height for consistency
-          maxHeight: 400,
+          minHeight: 140,
         ),
         decoration: ShapeDecoration(
           color: Colors.transparent,
@@ -34,71 +33,28 @@ class TaskCard extends BaseEntityCard {
           children: [
             // Main Content Area
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Task Type Label
-                  Text(
-                    'TASK',
-                    style: AppTypography.cardLabel,
-                  ),
-                  const SizedBox(height: 8),
-
-                  // Task Description
-                  Text(
-                    task.description,
-                    style: AppTypography.cardTitle,
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Priority and Status
+                  // Task Type Label and Icon
                   Row(
-                    children: [
-                      if (task.priority.isNotEmpty)
-                        Text(
-                          task.priority.toUpperCase(),
-                          style: AppTypography.cardMetadata,
-                        ),
-                      if (task.priority.isNotEmpty && task.status.isNotEmpty)
-                        const SizedBox(width: 42),
-                      if (task.status.isNotEmpty)
-                        Text(
-                          task.status.toUpperCase(),
-                          style: AppTypography.cardMetadata,
-                        ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            // Bottom Section (Divider + Due Date & Arrow)
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Divider
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Container(
-                    height: 0.5,
-                    color: Colors.white,
-                  ),
-                ),
-
-                // Due Date and Arrow
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 12, 24, 12),
-                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      if (task.schedule.isNotEmpty)
-                        Text(
-                          _formatSchedule(task.schedule),
-                          style: AppTypography.cardDate,
-                        ),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.task_alt,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'TASK',
+                            style: AppTypography.cardLabel,
+                          ),
+                        ],
+                      ),
                       Transform.rotate(
                         angle: -0.79,
                         child: const Icon(
@@ -109,9 +65,58 @@ class TaskCard extends BaseEntityCard {
                       ),
                     ],
                   ),
-                ),
-              ],
+                  const SizedBox(height: 16),
+
+                  // Task Description
+                  Text(
+                    task.description,
+                    style: AppTypography.cardTitle,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+
+                  // Due date
+                  if (task.schedule.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      _formatSchedule(task.schedule),
+                      style: AppTypography.cardMetadata,
+                    ),
+                  ],
+                ],
+              ),
             ),
+
+            // Bottom Section with Status and Priority
+            if (task.status.isNotEmpty || task.priority.isNotEmpty) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Container(
+                  height: 0.5,
+                  color: Colors.white,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 12, 24, 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    if (task.priority.isNotEmpty)
+                      Text(
+                        task.priority.toUpperCase(),
+                        style: AppTypography.cardMetadata,
+                      ),
+                    if (task.priority.isNotEmpty && task.status.isNotEmpty)
+                      const SizedBox(width: 16),
+                    if (task.status.isNotEmpty)
+                      Text(
+                        task.status.toUpperCase(),
+                        style: AppTypography.cardMetadata,
+                      ),
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -119,20 +124,6 @@ class TaskCard extends BaseEntityCard {
   }
 
   String _formatSchedule(String schedule) {
-    // TODO: Implement proper schedule formatting
     return 'due in a day';
   }
-
-  // Required by BaseEntityCard but not used in this implementation
-  @override
-  Widget buildIcon() => const SizedBox.shrink();
-
-  @override
-  String getTypeText() => 'TASK';
-
-  @override
-  Widget buildContent() => const SizedBox.shrink();
-
-  @override
-  Widget buildBottomRow() => const SizedBox.shrink();
 }
