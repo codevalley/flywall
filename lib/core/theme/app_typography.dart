@@ -84,7 +84,7 @@ class AppTypography {
   // Body Text
   static TextStyle get body => const TextStyle(
         fontFamily: merriweather,
-        fontSize: 14,
+        fontSize: 16,
         fontWeight: FontWeight.w400,
         color: AppColors.textPrimary,
         height: 1.5,

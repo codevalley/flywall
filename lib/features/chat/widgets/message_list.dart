@@ -3,6 +3,8 @@ import '../presentation/providers/chat_provider.dart';
 import 'entity/entity_card_factory.dart';
 import '../domain/models/entity_base.dart';
 import '../../../core/theme/theme.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AnimatedScrollView extends StatefulWidget {
   final Widget child;
@@ -174,12 +176,51 @@ class MessageList extends StatelessWidget {
       constraints: BoxConstraints(
         maxWidth: MediaQuery.of(context).size.width * 0.75,
       ),
-      child: Text(
-        message.content,
-        style: AppTypography.welcomeText.copyWith(
-          color: message.isUserMessage ? Colors.white : const Color(0xFFE5A000),
-        ),
-      ),
+      child: message.isUserMessage
+          ? Text(
+              message.content,
+              style: AppTypography.body.copyWith(
+                color: Colors.white,
+              ),
+            )
+          : MarkdownBody(
+              data: message.content,
+              styleSheet: MarkdownStyleSheet(
+                p: AppTypography.body.copyWith(
+                  color: const Color(0xFFE5A000),
+                ),
+                strong: AppTypography.body.copyWith(
+                  color: const Color(0xFFE5A000),
+                  fontWeight: FontWeight.bold,
+                ),
+                em: AppTypography.body.copyWith(
+                  color: const Color(0xFFE5A000),
+                  fontStyle: FontStyle.italic,
+                ),
+                code: AppTypography.body.copyWith(
+                  color: const Color(0xFFE5A000),
+                  fontFamily: 'monospace',
+                  backgroundColor: Colors.black26,
+                ),
+                codeblockDecoration: BoxDecoration(
+                  color: Colors.black26,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                blockquote: AppTypography.body.copyWith(
+                  color: const Color(0xFFE5A000).withOpacity(0.8),
+                ),
+                listBullet: AppTypography.body.copyWith(
+                  color: const Color(0xFFE5A000),
+                ),
+                // Add more styles as needed
+              ),
+              onTapLink: (text, href, title) {
+                if (href != null) {
+                  launchUrl(Uri.parse(href));
+                }
+              },
+              selectable: true, // Makes text selectable
+            ),
     );
   }
 
