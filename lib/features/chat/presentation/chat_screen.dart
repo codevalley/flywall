@@ -23,11 +23,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   String? _userName;
   String? _userSecret;
   bool _isKeyboardVisible = false;
+  bool _isContentScrollable = false;
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
+    scrollController.addListener(_updateScrollState);
   }
 
   Future<void> _loadUserData() async {
@@ -127,6 +129,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     );
   }
 
+  void _updateScrollState() {
+    final isScrollable = scrollController.hasClients &&
+        scrollController.position.maxScrollExtent > 0;
+    if (isScrollable != _isContentScrollable) {
+      setState(() {
+        _isContentScrollable = isScrollable;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final chatState = ref.watch(chatProvider);
@@ -167,6 +179,20 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           isExpanded: !_isKeyboardVisible,
                         ),
                 ),
+
+                // Add separator when messages exist and content is scrollable
+                if (hasMessages && _isContentScrollable)
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      top: 8.0,
+                      left: 16.0,
+                      right: 16.0,
+                    ),
+                    child: Container(
+                      height: 1,
+                      color: AppColors.white,
+                    ),
+                  ),
 
                 if (!hasMessages) ...[
                   const Spacer(),
@@ -214,6 +240,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   void dispose() {
+    scrollController.removeListener(_updateScrollState);
     scrollController.dispose();
     super.dispose();
   }

@@ -164,7 +164,7 @@ class _AppLogoState extends State<AppLogo> with TickerProviderStateMixin {
 
     _logoOffsetAnimation = Tween<Offset>(
       begin: const Offset(0, 0),
-      end: const Offset(-0.6, -0.8),
+      end: const Offset(-0.6, -0.24),
     ).animate(CurvedAnimation(
       parent: _layoutController,
       curve: Curves.easeInOut,
@@ -172,7 +172,7 @@ class _AppLogoState extends State<AppLogo> with TickerProviderStateMixin {
 
     _textOffsetAnimation = Tween<Offset>(
       begin: const Offset(0, 1.2),
-      end: const Offset(0.1, -2.86),
+      end: const Offset(0.1, -2.06),
     ).animate(CurvedAnimation(
       parent: _layoutController,
       curve: Curves.easeInOut,
