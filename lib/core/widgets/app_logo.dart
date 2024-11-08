@@ -119,11 +119,13 @@ class _MiniAppLogoState extends State<MiniAppLogo>
 class AppLogo extends StatefulWidget {
   final bool isExpanded;
   final VoidCallback? onAnimationComplete;
+  final VoidCallback? onMiniLogoTap;
 
   const AppLogo({
     super.key,
     this.isExpanded = true,
     this.onAnimationComplete,
+    this.onMiniLogoTap,
   });
 
   @override
@@ -221,6 +223,7 @@ class _AppLogoState extends State<AppLogo> with TickerProviderStateMixin {
       animation: _layoutController,
       builder: (context, child) {
         final height = _layoutController.value > 0 ? 40.0 : 200.0;
+        final isMiniLogo = _layoutController.value > 0.5;
 
         return SizedBox(
           width: MediaQuery.of(context).size.width,
@@ -237,7 +240,12 @@ class _AppLogoState extends State<AppLogo> with TickerProviderStateMixin {
                   child: ScaleTransition(
                     scale: _scaleAnimation,
                     child: GestureDetector(
-                      onTap: _spin,
+                      onTap: () {
+                        _spin();
+                        if (isMiniLogo) {
+                          widget.onMiniLogoTap?.call();
+                        }
+                      },
                       child: RotationTransition(
                         turns: CurvedAnimation(
                           parent: _spinController,

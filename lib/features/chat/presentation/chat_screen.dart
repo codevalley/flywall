@@ -161,9 +161,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 // Logo Section with animation and tap handler
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 32),
-                  child: hasMessages || _isKeyboardVisible
+                  child: hasMessages
                       ? MiniAppLogo(onTap: _handleLogoTap)
-                      : const AppLogo(isExpanded: true), // App Logo
+                      : AppLogo(
+                          isExpanded: !_isKeyboardVisible,
+                        ),
                 ),
 
                 if (!hasMessages) ...[
