@@ -113,6 +113,14 @@ class _AuthBottomSheetState extends ConsumerState<AuthBottomSheet> {
     }
   }
 
+  void _clearText() {
+    setState(() {
+      _controller.clear();
+      _actualSecret = null;
+      _enteredValue = null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     ref.listen<AuthState>(
@@ -213,13 +221,17 @@ class _AuthBottomSheetState extends ConsumerState<AuthBottomSheet> {
                                 ),
                                 suffixIcon: widget.isRestore
                                     ? IconButton(
-                                        icon: const Icon(
-                                          Icons.content_paste_rounded,
+                                        icon: Icon(
+                                          _enteredValue?.isNotEmpty == true
+                                              ? Icons.clear_rounded
+                                              : Icons.content_paste_rounded,
                                           color: AppColors.black,
                                         ),
                                         onPressed: _isLoading
                                             ? null
-                                            : _pasteFromClipboard,
+                                            : (_enteredValue?.isNotEmpty == true
+                                                ? _clearText
+                                                : _pasteFromClipboard),
                                       )
                                     : null,
                               ),
@@ -405,7 +417,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      isDismissible: !isRestore,
       builder: (context) => AuthBottomSheet(isRestore: isRestore),
     ).whenComplete(() {
       if (mounted) {
