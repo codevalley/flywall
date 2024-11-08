@@ -145,4 +145,9 @@ class SessionManager {
       return false;
     }
   }
+
+  Future<void> clear() async {
+    await _storage.clearSession();
+    // Add any other keys that need to be cleared
+  }
 }

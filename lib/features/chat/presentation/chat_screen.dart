@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
+import 'package:flywall/features/auth/presentation/providers/auth_provider.dart';
+import 'package:go_router/go_router.dart';
 import '../widgets/search_input.dart';
 import '../widgets/message_list.dart';
 import 'providers/chat_provider.dart';
@@ -65,10 +67,69 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
   }
 
+  Future<void> _handleLogout() async {
+    if (_userSecret != null) {
+      await Clipboard.setData(ClipboardData(text: _userSecret!));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Secret copied to clipboard'),
+            duration: Duration(seconds: 2),
+            backgroundColor: AppColors.green,
+          ),
+        );
+      }
+    }
+
+    final sessionManager = ref.read(sessionManagerProvider);
+    await sessionManager.clear();
+
+    if (mounted) {
+      context.go('/');
+    }
+  }
+
+  void _handleLogoTap() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.black,
+      builder: (context) => Container(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.copy, color: AppColors.yellow),
+              title: const Text(
+                'Copy Secret',
+                style: TextStyle(color: AppColors.yellow),
+              ),
+              onTap: () {
+                _copySecretToClipboard();
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading:
+                  const Icon(Icons.logout_rounded, color: AppColors.yellow),
+              title: const Text(
+                'Logout',
+                style: TextStyle(color: AppColors.yellow),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _handleLogout();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final chatState = ref.watch(chatProvider);
-    final selectedEntity = ref.watch(selectedEntityProvider);
     final hasMessages = chatState.messages.isNotEmpty;
     final isThreadComplete =
         chatState.messages.lastOrNull?.isThreadComplete ?? false;
@@ -97,11 +158,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             Column(
               children: [
                 const SizedBox(height: 48),
-                // Logo Section with tap handler
+                // Logo Section with animation and tap handler
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 32),
                   child: hasMessages || _isKeyboardVisible
-                      ? MiniAppLogo(onTap: _copySecretToClipboard)
+                      ? MiniAppLogo(onTap: _handleLogoTap)
                       : const AppLogo(isExpanded: true), // App Logo
                 ),
 
