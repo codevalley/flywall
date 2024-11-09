@@ -90,7 +90,7 @@ class FlywallApp extends ConsumerWidget {
     final authState = ref.watch(authProvider);
 
     return MaterialApp(
-      title: 'Flywall',
+      title: 'Sidekick',
       theme: AppTheme.darkTheme, // Use our new theme
       debugShowCheckedModeBanner: false, // Remove debug banner
       home: authState.status == AuthStatus.authenticated

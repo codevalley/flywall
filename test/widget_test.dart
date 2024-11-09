@@ -73,7 +73,7 @@ void main() {
     );
 
     // Verify that splash screen is shown initially
-    expect(find.text('Flywall'), findsOneWidget);
+    expect(find.text('Sidekick'), findsOneWidget);
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
     // Allow async operations to complete
