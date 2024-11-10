@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import '../widgets/search_input.dart';
 import '../widgets/message_list.dart';
 import 'providers/chat_provider.dart';
-import 'providers/entity_provider.dart';
 import '../../../core/providers/core_providers.dart';
 import '../../../core/theme/theme.dart';
 import '../../../core/widgets/app_logo.dart';
@@ -20,7 +19,6 @@ class ChatScreen extends ConsumerStatefulWidget {
 
 class _ChatScreenState extends ConsumerState<ChatScreen> {
   final scrollController = ScrollController();
-  String? _userName;
   String? _userSecret;
   bool _isKeyboardVisible = false;
   bool _isContentScrollable = false;
@@ -34,11 +32,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   Future<void> _loadUserData() async {
     final storage = ref.read(sessionStorageProvider);
-    final userName = await storage.getUserName();
     final userSecret = await storage.getUserSecret();
     if (mounted) {
       setState(() {
-        _userName = userName;
         _userSecret = userSecret;
       });
     }

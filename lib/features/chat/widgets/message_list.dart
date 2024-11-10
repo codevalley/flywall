@@ -5,6 +5,8 @@ import '../domain/models/entity_base.dart';
 import '../../../core/theme/theme.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'dart:math' as math;
+import '../../../core/constants/ui_constants.dart';
 
 class AnimatedScrollView extends StatefulWidget {
   final Widget child;
@@ -174,52 +176,53 @@ class MessageList extends StatelessWidget {
   Widget _buildMessageBubble(BuildContext context, ChatMessage message) {
     return Container(
       constraints: BoxConstraints(
-        maxWidth: MediaQuery.of(context).size.width * 0.75,
+        maxWidth: MediaQuery.of(context).size.width *
+            UIConstants.messageMaxWidthFactor,
       ),
       child: message.isUserMessage
           ? Text(
               message.content,
               style: AppTypography.body.copyWith(
-                color: Colors.white,
+                color: AppColors.textPrimary,
               ),
             )
           : MarkdownBody(
               data: message.content,
               styleSheet: MarkdownStyleSheet(
                 p: AppTypography.body.copyWith(
-                  color: const Color(0xFFE5A000),
+                  color: AppColors.yellow,
                 ),
                 strong: AppTypography.body.copyWith(
-                  color: const Color(0xFFE5A000),
+                  color: AppColors.yellow,
                   fontWeight: FontWeight.bold,
                 ),
                 em: AppTypography.body.copyWith(
-                  color: const Color(0xFFE5A000),
+                  color: AppColors.yellow,
                   fontStyle: FontStyle.italic,
                 ),
                 code: AppTypography.body.copyWith(
-                  color: const Color(0xFFE5A000),
+                  color: AppColors.yellow,
                   fontFamily: 'monospace',
                   backgroundColor: Colors.black26,
                 ),
                 codeblockDecoration: BoxDecoration(
                   color: Colors.black26,
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius:
+                      BorderRadius.circular(UIConstants.messageCodeBlockRadius),
                 ),
                 blockquote: AppTypography.body.copyWith(
-                  color: const Color(0xFFE5A000).withOpacity(0.8),
+                  color: AppColors.yellow.withOpacity(0.8),
                 ),
                 listBullet: AppTypography.body.copyWith(
-                  color: const Color(0xFFE5A000),
+                  color: AppColors.yellow,
                 ),
-                // Add more styles as needed
               ),
               onTapLink: (text, href, title) {
                 if (href != null) {
                   launchUrl(Uri.parse(href));
                 }
               },
-              selectable: true, // Makes text selectable
+              selectable: true,
             ),
     );
   }
@@ -230,8 +233,7 @@ class MessageList extends StatelessWidget {
     return Text(
       'token usage ${tokenUsage['prompt_tokens'] ?? 0} + ${tokenUsage['completion_tokens'] ?? 0}',
       style: AppTypography.footnote.copyWith(
-        color: const Color(0xFFE5A000),
-        fontSize: 12,
+        color: AppColors.yellow,
       ),
     );
   }
@@ -245,19 +247,18 @@ class MessageList extends StatelessWidget {
       padding: const EdgeInsets.only(top: 12),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          // Calculate card width to ensure peek
           final availableWidth = constraints.maxWidth;
-          final cardWidth =
-              availableWidth - 48.0; // Account for horizontal padding
+          final cardWidth = math.min(UIConstants.maxCardWidth,
+              availableWidth - (UIConstants.cardHorizontalPadding * 2));
           final effectiveCardWidth =
-              showPeek ? cardWidth - 40 : cardWidth; // Show peek of next card
+              showPeek ? cardWidth - UIConstants.cardPeekOffset : cardWidth;
 
           return AnimatedScrollView(
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               padding: EdgeInsets.only(
-                left: 24,
-                right: showPeek ? 0 : 24,
+                left: UIConstants.cardHorizontalPadding,
+                right: showPeek ? 0 : UIConstants.cardHorizontalPadding,
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,

@@ -57,7 +57,7 @@ class SessionManager {
       }
       return false;
     } catch (e) {
-      debugPrint('Login error: $e');
+      debugPrint('Login error: ${e.toString()}');
       throw AuthException(e.toString());
     }
   }

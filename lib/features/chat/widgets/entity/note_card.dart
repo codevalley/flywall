@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../domain/models/note_entity.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../core/constants/ui_constants.dart';
 
 class NoteCard extends StatelessWidget {
   final NoteEntity note;
@@ -17,28 +18,29 @@ class NoteCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: double.infinity,
         constraints: const BoxConstraints(
-          minHeight: 140, // Minimum height for consistency
-          maxHeight: 400,
+          minHeight: UIConstants.minCardHeight,
+          maxHeight: UIConstants.maxCardHeight,
+          maxWidth: UIConstants.maxCardWidth,
         ),
         decoration: ShapeDecoration(
           color: Colors.transparent,
           shape: RoundedRectangleBorder(
-            side: const BorderSide(width: 1, color: Colors.white),
-            borderRadius: BorderRadius.circular(20),
+            side: const BorderSide(
+              width: UIConstants.cardBorderWidth,
+              color: AppColors.white,
+            ),
+            borderRadius: BorderRadius.circular(UIConstants.cardBorderRadius),
           ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Main Content Area
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
+              padding: UIConstants.cardMainPadding,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Note Type Label and Icon
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -46,29 +48,24 @@ class NoteCard extends StatelessWidget {
                         children: [
                           const Icon(
                             Icons.note,
-                            color: Colors.white,
-                            size: 18,
+                            color: AppColors.white,
+                            size: UIConstants.cardIconSize,
                           ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'NOTE',
-                            style: AppTypography.cardLabel,
-                          ),
+                          const SizedBox(width: UIConstants.mediumSpacing),
+                          Text('NOTE', style: AppTypography.cardLabel),
                         ],
                       ),
                       Transform.rotate(
-                        angle: -0.79,
+                        angle: UIConstants.cardArrowRotation,
                         child: const Icon(
                           Icons.arrow_forward,
-                          color: Colors.white,
-                          size: 24,
+                          color: AppColors.white,
+                          size: UIConstants.cardArrowSize,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
-
-                  // Note Content
+                  const SizedBox(height: UIConstants.largeSpacing),
                   Text(
                     note.content,
                     style: AppTypography.cardTitle,
@@ -78,8 +75,6 @@ class NoteCard extends StatelessWidget {
                 ],
               ),
             ),
-
-            // Bottom Section
             if (note.relatedPeople.isNotEmpty ||
                 note.relatedTasks.isNotEmpty ||
                 note.relatedTopics.isNotEmpty) ...[

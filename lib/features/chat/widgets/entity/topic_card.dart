@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../domain/models/topic_entity.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../core/constants/ui_constants.dart';
 
 class TopicCard extends StatelessWidget {
   final TopicEntity topic;
@@ -17,28 +18,29 @@ class TopicCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: double.infinity,
         constraints: const BoxConstraints(
-          minHeight: 140, // Minimum height for consistency
-          maxHeight: 400,
+          minHeight: UIConstants.minCardHeight,
+          maxHeight: UIConstants.maxCardHeight,
+          maxWidth: UIConstants.maxCardWidth,
         ),
         decoration: ShapeDecoration(
           color: Colors.transparent,
           shape: RoundedRectangleBorder(
-            side: const BorderSide(width: 1, color: Colors.white),
-            borderRadius: BorderRadius.circular(20),
+            side: const BorderSide(
+              width: UIConstants.cardBorderWidth,
+              color: AppColors.white,
+            ),
+            borderRadius: BorderRadius.circular(UIConstants.cardBorderRadius),
           ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Main Content Area
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
+              padding: UIConstants.cardMainPadding,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Topic Type Label and Icon
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -46,29 +48,24 @@ class TopicCard extends StatelessWidget {
                         children: [
                           const Icon(
                             Icons.topic,
-                            color: Colors.white,
-                            size: 18,
+                            color: AppColors.white,
+                            size: UIConstants.cardIconSize,
                           ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'TOPIC',
-                            style: AppTypography.cardLabel,
-                          ),
+                          const SizedBox(width: UIConstants.mediumSpacing),
+                          Text('TOPIC', style: AppTypography.cardLabel),
                         ],
                       ),
                       Transform.rotate(
-                        angle: -0.79,
+                        angle: UIConstants.cardArrowRotation,
                         child: const Icon(
                           Icons.arrow_forward,
-                          color: Colors.white,
-                          size: 24,
+                          color: AppColors.white,
+                          size: UIConstants.cardArrowSize,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
-
-                  // Topic Name
+                  const SizedBox(height: UIConstants.largeSpacing),
                   Text(
                     topic.name,
                     style: AppTypography.cardTitle,
@@ -76,7 +73,7 @@ class TopicCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   if (topic.description.isNotEmpty) ...[
-                    const SizedBox(height: 4),
+                    const SizedBox(height: UIConstants.smallSpacing),
                     Text(
                       topic.description,
                       style: AppTypography.cardMetadata,
@@ -87,18 +84,16 @@ class TopicCard extends StatelessWidget {
                 ],
               ),
             ),
-
-            // Bottom Section
             if (topic.keywords.isNotEmpty) ...[
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: UIConstants.cardDividerPadding,
                 child: Container(
-                  height: 0.5,
-                  color: Colors.white,
+                  height: UIConstants.cardDividerHeight,
+                  color: AppColors.white,
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(24, 12, 24, 12),
+                padding: UIConstants.cardBottomPadding,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -112,7 +107,7 @@ class TopicCard extends StatelessWidget {
                     ),
                     if (topic.relatedPeople.isNotEmpty ||
                         topic.relatedTasks.isNotEmpty) ...[
-                      const SizedBox(width: 16),
+                      const SizedBox(width: UIConstants.extraLargeSpacing),
                       Text(
                         '${topic.relatedPeople.length + topic.relatedTasks.length} LINKS',
                         style: AppTypography.cardMetadata,

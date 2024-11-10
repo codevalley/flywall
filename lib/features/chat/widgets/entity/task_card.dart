@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../domain/models/task_entity.dart';
 import '../../../../core/theme/theme.dart';
+import '../../../../core/constants/ui_constants.dart';
 
 class TaskCard extends StatelessWidget {
   final TaskEntity task;
@@ -17,27 +18,29 @@ class TaskCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: double.infinity,
         constraints: const BoxConstraints(
-          minHeight: 140,
+          minHeight: UIConstants.minCardHeight,
+          maxHeight: UIConstants.maxCardHeight,
+          maxWidth: UIConstants.maxCardWidth,
         ),
         decoration: ShapeDecoration(
           color: Colors.transparent,
           shape: RoundedRectangleBorder(
-            side: const BorderSide(width: 1, color: Colors.white),
-            borderRadius: BorderRadius.circular(20),
+            side: const BorderSide(
+              width: UIConstants.cardBorderWidth,
+              color: AppColors.white,
+            ),
+            borderRadius: BorderRadius.circular(UIConstants.cardBorderRadius),
           ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Main Content Area
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+              padding: UIConstants.cardMainPadding,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Task Type Label and Icon
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -45,39 +48,32 @@ class TaskCard extends StatelessWidget {
                         children: [
                           const Icon(
                             Icons.task_alt,
-                            color: Colors.white,
-                            size: 18,
+                            color: AppColors.white,
+                            size: UIConstants.cardIconSize,
                           ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'TASK',
-                            style: AppTypography.cardLabel,
-                          ),
+                          const SizedBox(width: UIConstants.mediumSpacing),
+                          Text('TASK', style: AppTypography.cardLabel),
                         ],
                       ),
                       Transform.rotate(
-                        angle: -0.79,
+                        angle: UIConstants.cardArrowRotation,
                         child: const Icon(
                           Icons.arrow_forward,
-                          color: Colors.white,
-                          size: 24,
+                          color: AppColors.white,
+                          size: UIConstants.cardArrowSize,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-
-                  // Task Description
+                  const SizedBox(height: UIConstants.extraLargeSpacing),
                   Text(
                     task.description,
                     style: AppTypography.cardTitle,
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                   ),
-
-                  // Due date
                   if (task.schedule.isNotEmpty) ...[
-                    const SizedBox(height: 8),
+                    const SizedBox(height: UIConstants.mediumSpacing),
                     Text(
                       _formatSchedule(task.schedule),
                       style: AppTypography.cardMetadata,
@@ -86,18 +82,16 @@ class TaskCard extends StatelessWidget {
                 ],
               ),
             ),
-
-            // Bottom Section with Status and Priority
             if (task.status.isNotEmpty || task.priority.isNotEmpty) ...[
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: UIConstants.cardDividerPadding,
                 child: Container(
-                  height: 0.5,
-                  color: Colors.white,
+                  height: UIConstants.cardDividerHeight,
+                  color: AppColors.white,
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(24, 12, 24, 12),
+                padding: UIConstants.cardBottomPadding,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
@@ -107,7 +101,7 @@ class TaskCard extends StatelessWidget {
                         style: AppTypography.cardMetadata,
                       ),
                     if (task.priority.isNotEmpty && task.status.isNotEmpty)
-                      const SizedBox(width: 16),
+                      const SizedBox(width: UIConstants.extraLargeSpacing),
                     if (task.status.isNotEmpty)
                       Text(
                         task.status.toUpperCase(),

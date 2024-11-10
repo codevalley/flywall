@@ -43,7 +43,6 @@ Future<void> pumpUntilFound(
   Duration timeout = const Duration(seconds: 5),
 }) async {
   bool timerDone = false;
-  final timer = Future.delayed(timeout, () => timerDone = true);
 
   while (!timerDone) {
     await tester.pump(const Duration(milliseconds: 50));
@@ -55,6 +54,4 @@ Future<void> pumpUntilFound(
 
     await Future.delayed(const Duration(milliseconds: 50));
   }
-
-  throw Exception('Finder not found within timeout: $finder');
 }
