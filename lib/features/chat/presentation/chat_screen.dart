@@ -5,6 +5,7 @@ import 'package:flywall/features/auth/presentation/providers/auth_provider.dart'
 import 'package:go_router/go_router.dart';
 import '../widgets/search_input.dart';
 import '../widgets/message_list.dart';
+import '../widgets/suggestion_bubbles.dart';
 import 'providers/chat_provider.dart';
 import '../../../core/providers/core_providers.dart';
 import '../../../core/theme/theme.dart';
@@ -22,6 +23,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   String? _userSecret;
   bool _isKeyboardVisible = false;
   bool _isContentScrollable = false;
+
+  // Add suggested questions
+  final List<String> _suggestions = [
+    'What is my current task?',
+    'Create a new note',
+    'Show my recent topics',
+    'Help me brainstorm',
+  ];
 
   @override
   void initState() {
@@ -161,70 +170,88 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     return Scaffold(
       backgroundColor: AppColors.black,
       body: SafeArea(
-        child: Stack(
+        child: Column(
           children: [
-            Column(
-              children: [
-                const SizedBox(height: 48),
-                // Logo Section with animation and tap handler
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32),
-                  child: hasMessages
-                      ? MiniAppLogo(onTap: _handleLogoTap)
-                      : AppLogo(
-                          isExpanded: !_isKeyboardVisible,
-                        ),
+            // Top section with logo
+            Padding(
+              padding: const EdgeInsets.fromLTRB(32, 48, 32, 16),
+              child: hasMessages
+                  ? MiniAppLogo(onTap: _handleLogoTap)
+                  : AppLogo(
+                      isExpanded: !_isKeyboardVisible,
+                    ),
+            ),
+
+            // Add separator when messages exist and content is scrollable
+            if (hasMessages && _isContentScrollable)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Container(
+                  height: 1,
+                  color: AppColors.white,
                 ),
+              ),
 
-                // Add separator when messages exist and content is scrollable
-                if (hasMessages && _isContentScrollable)
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      top: 8.0,
-                      left: 16.0,
-                      right: 16.0,
-                    ),
-                    child: Container(
-                      height: 1,
-                      color: AppColors.white,
-                    ),
-                  ),
-
-                if (!hasMessages) ...[
-                  const Spacer(),
-                  // Welcome Message with new style
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 62),
-                    child: Text(
-                      'I can help with your existing information\n\nor help create new topics, tasks or notes.',
-                      textAlign: TextAlign.center,
-                      style: AppTypography.welcomeText.copyWith(
-                        color: AppColors.yellow,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                ] else
-                  Expanded(
-                    child: MessageList(
+            // Main content area
+            Expanded(
+              child: hasMessages
+                  ? MessageList(
                       messages: chatState.messages,
                       scrollController: scrollController,
                       isThreadComplete: isThreadComplete,
+                    )
+                  : Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 32),
+                        child: Text(
+                          'I can help with your existing information\n\nor help create new topics, tasks or notes.',
+                          textAlign: TextAlign.center,
+                          style: AppTypography.welcomeText.copyWith(
+                            color: AppColors.yellow,
+                          ),
+                        ),
+                      ),
+                    ),
+            ),
+
+            // Bottom section with suggestions and input
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Add suggestion bubbles above the input when there are no messages
+                if (!hasMessages && !chatState.isLoading && !_isKeyboardVisible)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    child: SuggestionBubbles(
+                      suggestions: _suggestions,
+                      onSuggestionTap: (suggestion) {
+                        if (isThreadComplete) {
+                          ref.read(chatProvider.notifier).clearThread();
+                        }
+                        ref.read(chatProvider.notifier).sendMessage(suggestion);
+                      },
+                      visible: !_isKeyboardVisible && !chatState.isLoading,
                     ),
                   ),
 
-                // Input Section
-                SearchInput(
-                  onSubmitted: (input) {
-                    if (input.trim().isNotEmpty) {
-                      if (isThreadComplete) {
-                        ref.read(chatProvider.notifier).clearThread();
+                // Input section
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: SearchInput(
+                    onSubmitted: (input) {
+                      if (input.trim().isNotEmpty) {
+                        if (isThreadComplete) {
+                          ref.read(chatProvider.notifier).clearThread();
+                        }
+                        ref.read(chatProvider.notifier).sendMessage(input);
                       }
-                      ref.read(chatProvider.notifier).sendMessage(input);
-                    }
-                  },
-                  enabled: !chatState.isLoading,
-                  isThreadActive: hasMessages,
+                    },
+                    enabled: !chatState.isLoading,
+                    isThreadActive: hasMessages,
+                  ),
                 ),
               ],
             ),
