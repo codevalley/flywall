@@ -47,8 +47,9 @@ class SessionManager {
           accessToken: data['access_token'],
         );
 
-        // Set the auth token for future requests
+        // Set the auth token and user secret for future requests
         _apiClient.setAuthToken(_currentUser!.accessToken!);
+        _apiClient.setUserSecret(userSecret);
 
         // Fetch additional user info
         await _fetchUserInfo();

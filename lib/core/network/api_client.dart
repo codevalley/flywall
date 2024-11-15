@@ -5,6 +5,9 @@ import '../errors/exceptions.dart';
 
 class ApiClient {
   late final Dio _dio;
+  String? _userSecret;
+  bool _isRefreshing = false;
+  final List<RequestOptions> _pendingRequests = [];
 
   ApiClient() {
     _dio = Dio(BaseOptions(
@@ -21,7 +24,55 @@ class ApiClient {
         return handler.next(response);
       },
       onError: (DioException e, handler) async {
-        if (e.type == DioExceptionType.connectionTimeout ||
+        if (e.response?.statusCode == 401 && _userSecret != null) {
+          // Token expired, attempt to refresh
+          final reqOptions = e.requestOptions;
+          
+          if (!_isRefreshing) {
+            _isRefreshing = true;
+            try {
+              // Try to get a new token using the stored secret
+              final response = await _dio.post(
+                AppConfig.tokenEndpoint,
+                data: {'user_secret': _userSecret},
+                options: Options(
+                  contentType: Headers.formUrlEncodedContentType,
+                ),
+              );
+
+              if (response.statusCode == 200) {
+                final newToken = response.data['access_token'];
+                setAuthToken(newToken);
+                
+                // Retry the original request with new token
+                reqOptions.headers['Authorization'] = 'Bearer $newToken';
+                
+                // Retry all pending requests
+                final requests = [..._pendingRequests];
+                _pendingRequests.clear();
+                for (final pendingRequest in requests) {
+                  pendingRequest.headers['Authorization'] = 'Bearer $newToken';
+                  _dio.fetch(pendingRequest);
+                }
+                
+                // Resolve the original failed request
+                return handler.resolve(await _dio.fetch(reqOptions));
+              }
+            } catch (refreshError) {
+              // Token refresh failed
+              return handler.next(DioException(
+                requestOptions: reqOptions,
+                error: 'Session expired. Please login again.',
+                type: DioExceptionType.badResponse,
+              ));
+            } finally {
+              _isRefreshing = false;
+            }
+          } else {
+            // Add to pending requests if currently refreshing
+            _pendingRequests.add(reqOptions);
+          }
+        } else if (e.type == DioExceptionType.connectionTimeout ||
             e.type == DioExceptionType.receiveTimeout) {
           if (e.requestOptions.extra['retryCount'] == null ||
               e.requestOptions.extra['retryCount'] < 3) {
@@ -129,7 +180,12 @@ class ApiClient {
     _dio.options.headers['Authorization'] = 'Bearer $token';
   }
 
+  void setUserSecret(String secret) {
+    _userSecret = secret;
+  }
+
   void clearAuthToken() {
     _dio.options.headers.remove('Authorization');
+    _userSecret = null;
   }
 }

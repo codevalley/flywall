@@ -13,7 +13,6 @@ class AppTheme {
         primary: AppColors.yellow,
         secondary: AppColors.green,
         surface: AppColors.black,
-        background: AppColors.black,
         error: Colors.red,
       ),
       textTheme: TextTheme(
